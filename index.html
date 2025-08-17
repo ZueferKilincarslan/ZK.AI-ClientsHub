@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kunden-Hub - ZK.AI Agency</title>
+    <link rel="stylesheet" href="src/styles/main.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="logo">
+                    <h2>ZK.AI</h2>
+                </div>
+                <div class="nav-links">
+                    <a href="#dashboard">Dashboard</a>
+                    <a href="#reviews">Reviews</a>
+                    <a href="#analytics">Analytics</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="neural-network"></div>
+                <h1 class="hero-title">Kunden-Hub Dashboard</h1>
+                <p class="hero-subtitle">Verwalten Sie Ihre Bewertungen und verfolgen Sie wichtige KPIs</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboard Section -->
+    <section id="dashboard" class="dashboard-section">
+        <div class="container">
+            <h2 class="section-title">Dashboard Übersicht</h2>
+            
+            <!-- KPI Cards -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-icon">⭐</div>
+                    <div class="kpi-content">
+                        <h3 class="kpi-value" id="avgRating">4.8</h3>
+                        <p class="kpi-label">Durchschnittsbewertung</p>
+                    </div>
+                </div>
+                
+                <div class="kpi-card">
+                    <div class="kpi-icon">📊</div>
+                    <div class="kpi-content">
+                        <h3 class="kpi-value" id="totalReviews">147</h3>
+                        <p class="kpi-label">Gesamt Reviews</p>
+                    </div>
+                </div>
+                
+                <div class="kpi-card">
+                    <div class="kpi-icon">😊</div>
+                    <div class="kpi-content">
+                        <h3 class="kpi-value" id="satisfactionRate">96%</h3>
+                        <p class="kpi-label">Kundenzufriedenheit</p>
+                    </div>
+                </div>
+                
+                <div class="kpi-card">
+                    <div class="kpi-icon">📈</div>
+                    <div class="kpi-content">
+                        <h3 class="kpi-value" id="monthlyGrowth">+23%</h3>
+                        <p class="kpi-label">Monatliches Wachstum</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reviews Section -->
+    <section id="reviews" class="reviews-section">
+        <div class="container">
+            <div class="reviews-content">
+                <!-- Review Form -->
+                <div class="review-form-container">
+                    <h2>Neue Bewertung abgeben</h2>
+                    <form id="reviewForm" class="review-form">
+                        <div class="form-group">
+                            <label for="reviewerName">Ihr Name</label>
+                            <input type="text" id="reviewerName" name="name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="rating">Bewertung</label>
+                            <div class="star-rating" id="starRating">
+                                <span class="star" data-rating="1">★</span>
+                                <span class="star" data-rating="2">★</span>
+                                <span class="star" data-rating="3">★</span>
+                                <span class="star" data-rating="4">★</span>
+                                <span class="star" data-rating="5">★</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="reviewComment">Kommentar</label>
+                            <textarea id="reviewComment" name="comment" rows="4" required></textarea>
+                        </div>
+                        
+                        <button type="submit" class="submit-btn">Bewertung absenden</button>
+                    </form>
+                </div>
+
+                <!-- Reviews Display -->
+                <div class="reviews-display">
+                    <h2>Kundenbewertungen</h2>
+                    <div id="reviewsList" class="reviews-list">
+                        <!-- Reviews will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Analytics Section -->
+    <section id="analytics" class="analytics-section">
+        <div class="container">
+            <h2 class="section-title">Analytics Dashboard</h2>
+            
+            <div class="analytics-grid">
+                <!-- Rating Distribution Chart -->
+                <div class="chart-container">
+                    <h3>Bewertungsverteilung</h3>
+                    <canvas id="ratingChart"></canvas>
+                </div>
+                
+                <!-- Monthly Reviews Chart -->
+                <div class="chart-container">
+                    <h3>Monatliche Reviews</h3>
+                    <canvas id="monthlyChart"></canvas>
+                </div>
+                
+                <!-- Satisfaction Trends -->
+                <div class="chart-container">
+                    <h3>Zufriedenheitstrend</h3>
+                    <canvas id="satisfactionChart"></canvas>
+                </div>
+                
+                <!-- Review Sources -->
+                <div class="chart-container">
+                    <h3>Review-Quellen</h3>
+                    <canvas id="sourcesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <h3>ZK.AI</h3>
+                    <p>KI-Automatisierung für moderne Unternehmen</p>
+                </div>
+                <div class="footer-links">
+                    <a href="https://www.zk-ai.agency">Hauptwebsite</a>
+                    <a href="#kontakt">Kontakt</a>
+                    <a href="#impressum">Impressum</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="src/js/reviews.js"></script>
+    <script src="src/js/analytics.js"></script>
+    <script src="src/js/main.js"></script>
+</body>
+</html>
