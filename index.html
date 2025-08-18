@@ -1,182 +1,406 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kunden-Hub - ZK.AI Agency</title>
-    <link rel="stylesheet" href="src/styles/main.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <meta name="description" content="AutoFlow - Powerful workflow automation platform for modern businesses">
+    <meta name="keywords" content="workflow, automation, business, productivity, n8n">
+    <meta name="author" content="AutoFlow Team">
+    <title>AutoFlow - Workflow Automation Platform</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="container">
-            <div class="nav-content">
-                <div class="logo">
-                    <h2>ZK.AI</h2>
-                </div>
-                <div class="nav-links">
-                    <a href="#dashboard">Dashboard</a>
-                    <a href="#reviews">Reviews</a>
-                    <a href="#analytics">Analytics</a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="container">
-            <div class="hero-content">
-                <div class="neural-network"></div>
-                <h1 class="hero-title">Kunden-Hub Dashboard</h1>
-                <p class="hero-subtitle">Verwalten Sie Ihre Bewertungen und verfolgen Sie wichtige KPIs</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Dashboard Section -->
-    <section id="dashboard" class="dashboard-section">
-        <div class="container">
-            <h2 class="section-title">Dashboard Übersicht</h2>
-            
-            <!-- KPI Cards -->
-            <div class="kpi-grid">
-                <div class="kpi-card">
-                    <div class="kpi-icon">⭐</div>
-                    <div class="kpi-content">
-                        <h3 class="kpi-value" id="avgRating">4.8</h3>
-                        <p class="kpi-label">Durchschnittsbewertung</p>
-                    </div>
+    <!-- Header -->
+    <header class="header">
+        <nav class="navbar">
+            <div class="container">
+                <div class="nav-brand">
+                    <i class="fas fa-bolt brand-icon"></i>
+                    <span class="brand-text">AutoFlow</span>
                 </div>
                 
-                <div class="kpi-card">
-                    <div class="kpi-icon">📊</div>
-                    <div class="kpi-content">
-                        <h3 class="kpi-value" id="totalReviews">147</h3>
-                        <p class="kpi-label">Gesamt Reviews</p>
-                    </div>
+                <ul class="nav-menu" id="nav-menu">
+                    <li class="nav-item">
+                        <a href="#home" class="nav-link active">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#features" class="nav-link">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#pricing" class="nav-link">Pricing</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#about" class="nav-link">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#contact" class="nav-link">Contact</a>
+                    </li>
+                </ul>
+                
+                <div class="nav-actions">
+                    <a href="#login" class="btn btn-outline">Login</a>
+                    <a href="#signup" class="btn btn-primary">Get Started</a>
                 </div>
                 
-                <div class="kpi-card">
-                    <div class="kpi-icon">😊</div>
-                    <div class="kpi-content">
-                        <h3 class="kpi-value" id="satisfactionRate">96%</h3>
-                        <p class="kpi-label">Kundenzufriedenheit</p>
-                    </div>
-                </div>
-                
-                <div class="kpi-card">
-                    <div class="kpi-icon">📈</div>
-                    <div class="kpi-content">
-                        <h3 class="kpi-value" id="monthlyGrowth">+23%</h3>
-                        <p class="kpi-label">Monatliches Wachstum</p>
-                    </div>
+                <div class="hamburger" id="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
                 </div>
             </div>
-        </div>
-    </section>
+        </nav>
+    </header>
 
-    <!-- Reviews Section -->
-    <section id="reviews" class="reviews-section">
-        <div class="container">
-            <div class="reviews-content">
-                <!-- Review Form -->
-                <div class="review-form-container">
-                    <h2>Neue Bewertung abgeben</h2>
-                    <form id="reviewForm" class="review-form">
-                        <div class="form-group">
-                            <label for="reviewerName">Ihr Name</label>
-                            <input type="text" id="reviewerName" name="name" required>
+    <!-- Main Content -->
+    <main>
+        <!-- Hero Section -->
+        <section id="home" class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <div class="hero-text">
+                        <h1 class="hero-title">
+                            Automate Your Workflows with 
+                            <span class="gradient-text">AutoFlow</span>
+                        </h1>
+                        <p class="hero-description">
+                            Streamline your business processes with our powerful workflow automation platform. 
+                            Connect your favorite tools and create seamless automated workflows in minutes.
+                        </p>
+                        <div class="hero-actions">
+                            <a href="#signup" class="btn btn-primary btn-large">
+                                Start Free Trial
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                            <a href="#demo" class="btn btn-outline btn-large">
+                                <i class="fas fa-play"></i>
+                                Watch Demo
+                            </a>
                         </div>
-                        
-                        <div class="form-group">
-                            <label for="rating">Bewertung</label>
-                            <div class="star-rating" id="starRating">
-                                <span class="star" data-rating="1">★</span>
-                                <span class="star" data-rating="2">★</span>
-                                <span class="star" data-rating="3">★</span>
-                                <span class="star" data-rating="4">★</span>
-                                <span class="star" data-rating="5">★</span>
+                        <div class="hero-stats">
+                            <div class="stat">
+                                <span class="stat-number">10K+</span>
+                                <span class="stat-label">Active Users</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number">1M+</span>
+                                <span class="stat-label">Workflows Created</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-number">99.9%</span>
+                                <span class="stat-label">Uptime</span>
                             </div>
                         </div>
-                        
-                        <div class="form-group">
-                            <label for="reviewComment">Kommentar</label>
-                            <textarea id="reviewComment" name="comment" rows="4" required></textarea>
+                    </div>
+                    <div class="hero-visual">
+                        <div class="dashboard-preview">
+                            <div class="dashboard-header">
+                                <div class="dashboard-nav">
+                                    <div class="nav-dot"></div>
+                                    <div class="nav-dot"></div>
+                                    <div class="nav-dot"></div>
+                                </div>
+                            </div>
+                            <div class="dashboard-content">
+                                <div class="workflow-card">
+                                    <div class="workflow-icon">
+                                        <i class="fas fa-envelope"></i>
+                                    </div>
+                                    <div class="workflow-info">
+                                        <h4>Email Campaign</h4>
+                                        <p>Active • 1,247 executions</p>
+                                    </div>
+                                    <div class="workflow-status success"></div>
+                                </div>
+                                <div class="workflow-card">
+                                    <div class="workflow-icon">
+                                        <i class="fas fa-database"></i>
+                                    </div>
+                                    <div class="workflow-info">
+                                        <h4>Data Sync</h4>
+                                        <p>Running • 892 executions</p>
+                                    </div>
+                                    <div class="workflow-status running"></div>
+                                </div>
+                                <div class="workflow-card">
+                                    <div class="workflow-icon">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <div class="workflow-info">
+                                        <h4>User Onboarding</h4>
+                                        <p>Paused • 634 executions</p>
+                                    </div>
+                                    <div class="workflow-status paused"></div>
+                                </div>
+                            </div>
                         </div>
-                        
-                        <button type="submit" class="submit-btn">Bewertung absenden</button>
-                    </form>
-                </div>
-
-                <!-- Reviews Display -->
-                <div class="reviews-display">
-                    <h2>Kundenbewertungen</h2>
-                    <div id="reviewsList" class="reviews-list">
-                        <!-- Reviews will be populated by JavaScript -->
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Analytics Section -->
-    <section id="analytics" class="analytics-section">
-        <div class="container">
-            <h2 class="section-title">Analytics Dashboard</h2>
-            
-            <div class="analytics-grid">
-                <!-- Rating Distribution Chart -->
-                <div class="chart-container">
-                    <h3>Bewertungsverteilung</h3>
-                    <canvas id="ratingChart"></canvas>
+        <!-- Features Section -->
+        <section id="features" class="features">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Powerful Features</h2>
+                    <p class="section-description">
+                        Everything you need to automate your business workflows
+                    </p>
                 </div>
                 
-                <!-- Monthly Reviews Chart -->
-                <div class="chart-container">
-                    <h3>Monatliche Reviews</h3>
-                    <canvas id="monthlyChart"></canvas>
-                </div>
-                
-                <!-- Satisfaction Trends -->
-                <div class="chart-container">
-                    <h3>Zufriedenheitstrend</h3>
-                    <canvas id="satisfactionChart"></canvas>
-                </div>
-                
-                <!-- Review Sources -->
-                <div class="chart-container">
-                    <h3>Review-Quellen</h3>
-                    <canvas id="sourcesChart"></canvas>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h3 class="feature-title">Lightning Fast</h3>
+                        <p class="feature-description">
+                            Execute workflows in milliseconds with our optimized infrastructure
+                        </p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-puzzle-piece"></i>
+                        </div>
+                        <h3 class="feature-title">Easy Integration</h3>
+                        <p class="feature-description">
+                            Connect with 500+ apps and services with pre-built integrations
+                        </p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3 class="feature-title">Advanced Analytics</h3>
+                        <p class="feature-description">
+                            Track performance with detailed analytics and real-time monitoring
+                        </p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3 class="feature-title">Enterprise Security</h3>
+                        <p class="feature-description">
+                            Bank-level security with encryption and compliance certifications
+                        </p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <h3 class="feature-title">Custom Code</h3>
+                        <p class="feature-description">
+                            Write custom JavaScript code for complex business logic
+                        </p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-headset"></i>
+                        </div>
+                        <h3 class="feature-title">24/7 Support</h3>
+                        <p class="feature-description">
+                            Get help anytime with our dedicated support team
+                        </p>
+                    </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
+
+        <!-- Pricing Section -->
+        <section id="pricing" class="pricing">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Simple Pricing</h2>
+                    <p class="section-description">
+                        Choose the plan that fits your needs
+                    </p>
+                </div>
+                
+                <div class="pricing-grid">
+                    <div class="pricing-card">
+                        <div class="pricing-header">
+                            <h3 class="pricing-title">Starter</h3>
+                            <div class="pricing-price">
+                                <span class="price">$19</span>
+                                <span class="period">/month</span>
+                            </div>
+                        </div>
+                        <ul class="pricing-features">
+                            <li><i class="fas fa-check"></i> 1,000 executions/month</li>
+                            <li><i class="fas fa-check"></i> 10 active workflows</li>
+                            <li><i class="fas fa-check"></i> Basic integrations</li>
+                            <li><i class="fas fa-check"></i> Email support</li>
+                        </ul>
+                        <a href="#signup" class="btn btn-outline btn-full">Get Started</a>
+                    </div>
+                    
+                    <div class="pricing-card featured">
+                        <div class="pricing-badge">Most Popular</div>
+                        <div class="pricing-header">
+                            <h3 class="pricing-title">Professional</h3>
+                            <div class="pricing-price">
+                                <span class="price">$49</span>
+                                <span class="period">/month</span>
+                            </div>
+                        </div>
+                        <ul class="pricing-features">
+                            <li><i class="fas fa-check"></i> 10,000 executions/month</li>
+                            <li><i class="fas fa-check"></i> Unlimited workflows</li>
+                            <li><i class="fas fa-check"></i> All integrations</li>
+                            <li><i class="fas fa-check"></i> Priority support</li>
+                            <li><i class="fas fa-check"></i> Advanced analytics</li>
+                        </ul>
+                        <a href="#signup" class="btn btn-primary btn-full">Get Started</a>
+                    </div>
+                    
+                    <div class="pricing-card">
+                        <div class="pricing-header">
+                            <h3 class="pricing-title">Enterprise</h3>
+                            <div class="pricing-price">
+                                <span class="price">$99</span>
+                                <span class="period">/month</span>
+                            </div>
+                        </div>
+                        <ul class="pricing-features">
+                            <li><i class="fas fa-check"></i> Unlimited executions</li>
+                            <li><i class="fas fa-check"></i> Unlimited workflows</li>
+                            <li><i class="fas fa-check"></i> Custom integrations</li>
+                            <li><i class="fas fa-check"></i> 24/7 phone support</li>
+                            <li><i class="fas fa-check"></i> SLA guarantee</li>
+                        </ul>
+                        <a href="#contact" class="btn btn-outline btn-full">Contact Sales</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="about">
+            <div class="container">
+                <div class="about-content">
+                    <div class="about-text">
+                        <h2 class="section-title">About AutoFlow</h2>
+                        <p class="about-description">
+                            AutoFlow was founded with a simple mission: to make workflow automation 
+                            accessible to everyone. We believe that every business, regardless of size, 
+                            should be able to automate repetitive tasks and focus on what matters most.
+                        </p>
+                        <p class="about-description">
+                            Our platform is built on top of proven open-source technologies and enhanced 
+                            with enterprise-grade features, security, and support. Join thousands of 
+                            businesses that trust AutoFlow to power their automation needs.
+                        </p>
+                        <div class="about-stats">
+                            <div class="stat-item">
+                                <span class="stat-number">500+</span>
+                                <span class="stat-label">Integrations</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">10K+</span>
+                                <span class="stat-label">Happy Customers</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number">99.9%</span>
+                                <span class="stat-label">Uptime SLA</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="about-visual">
+                        <div class="about-image">
+                            <div class="image-placeholder">
+                                <i class="fas fa-rocket"></i>
+                                <p>Powering automation for businesses worldwide</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
 
     <!-- Footer -->
-    <footer class="footer">
+    <footer id="contact" class="footer">
         <div class="container">
             <div class="footer-content">
-                <div class="footer-logo">
-                    <h3>ZK.AI</h3>
-                    <p>KI-Automatisierung für moderne Unternehmen</p>
+                <div class="footer-section">
+                    <div class="footer-brand">
+                        <i class="fas fa-bolt brand-icon"></i>
+                        <span class="brand-text">AutoFlow</span>
+                    </div>
+                    <p class="footer-description">
+                        Automate your workflows and boost productivity with our powerful platform.
+                    </p>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-github"></i></a>
+                    </div>
                 </div>
-                <div class="footer-links">
-                    <a href="https://www.zk-ai.agency">Hauptwebsite</a>
-                    <a href="#kontakt">Kontakt</a>
-                    <a href="#impressum">Impressum</a>
+                
+                <div class="footer-section">
+                    <h4 class="footer-title">Product</h4>
+                    <ul class="footer-links">
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
+                        <li><a href="#integrations">Integrations</a></li>
+                        <li><a href="#api">API</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4 class="footer-title">Company</h4>
+                    <ul class="footer-links">
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#careers">Careers</a></li>
+                        <li><a href="#blog">Blog</a></li>
+                        <li><a href="#press">Press</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4 class="footer-title">Support</h4>
+                    <ul class="footer-links">
+                        <li><a href="#help">Help Center</a></li>
+                        <li><a href="#docs">Documentation</a></li>
+                        <li><a href="#community">Community</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p class="copyright">
+                    © 2024 AutoFlow. All rights reserved.
+                </p>
+                <div class="footer-legal">
+                    <a href="#privacy">Privacy Policy</a>
+                    <a href="#terms">Terms of Service</a>
                 </div>
             </div>
         </div>
     </footer>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="src/js/reviews.js"></script>
-    <script src="src/js/analytics.js"></script>
-    <script src="src/js/main.js"></script>
+    <!-- JavaScript Files -->
+    <script src="js/main.js"></script>
+    <script src="js/animations.js"></script>
 </body>
 </html>
