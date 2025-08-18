@@ -1,4 +1,5 @@
 import React from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { Menu, Bell, Search } from 'lucide-react';
 
 interface HeaderProps {
@@ -6,6 +7,8 @@ interface HeaderProps {
 }
 
 export default function Header({ onMenuClick }: HeaderProps) {
+  const { profile } = useAuth();
+
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
       <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -40,12 +43,24 @@ export default function Header({ onMenuClick }: HeaderProps) {
           </button>
 
           <div className="flex items-center space-x-3">
-            <div className="h-8 w-8 rounded-full bg-indigo-600 flex items-center justify-center">
-              <span className="text-sm font-medium text-white">JD</span>
+            <div className="h-8 w-8 rounded-full bg-indigo-600 flex items-center justify-center overflow-hidden">
+              {profile?.avatar_url ? (
+                <img 
+                  src={profile.avatar_url} 
+                  alt={profile.full_name || profile.email}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <span className="text-sm font-medium text-white">
+                  {profile?.full_name?.charAt(0) || profile?.email?.charAt(0) || 'U'}
+                </span>
+              )}
             </div>
             <div className="hidden sm:block">
-              <p className="text-sm font-medium text-gray-900">John Doe</p>
-              <p className="text-xs text-gray-500">john@company.com</p>
+              <p className="text-sm font-medium text-gray-900">
+                {profile?.full_name || 'User'}
+              </p>
+              <p className="text-xs text-gray-500">{profile?.email}</p>
             </div>
           </div>
         </div>

@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase, Workflow } from '../lib/supabase';
 import { Link } from 'react-router-dom';
 import { 
   Play, 
@@ -11,54 +14,6 @@ import {
   Filter,
   MoreVertical
 } from 'lucide-react';
-
-const workflows = [
-  {
-    id: 1,
-    name: 'Welcome Email Sequence',
-    status: 'active',
-    lastRun: '2 minutes ago',
-    executions: 1247,
-    successRate: 98.2,
-    description: 'Automated welcome series for new subscribers',
-  },
-  {
-    id: 2,
-    name: 'Lead Nurturing Campaign',
-    status: 'active',
-    lastRun: '15 minutes ago',
-    executions: 892,
-    successRate: 94.7,
-    description: 'Multi-touch campaign for lead conversion',
-  },
-  {
-    id: 3,
-    name: 'Customer Onboarding',
-    status: 'paused',
-    lastRun: '1 hour ago',
-    executions: 634,
-    successRate: 87.3,
-    description: 'Step-by-step onboarding for new customers',
-  },
-  {
-    id: 4,
-    name: 'Abandoned Cart Recovery',
-    status: 'failed',
-    lastRun: '3 hours ago',
-    executions: 423,
-    successRate: 76.8,
-    description: 'Recover abandoned shopping carts',
-  },
-  {
-    id: 5,
-    name: 'Weekly Newsletter',
-    status: 'active',
-    lastRun: '1 day ago',
-    executions: 156,
-    successRate: 99.1,
-    description: 'Weekly newsletter automation',
-  },
-];
 
 const statusConfig = {
   active: {
@@ -82,14 +37,81 @@ const statusConfig = {
 };
 
 export default function Workflows() {
+  const { user } = useAuth();
+  const [workflows, setWorkflows] = useState<Workflow[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+
+  useEffect(() => {
+    if (user) {
+      fetchWorkflows();
+    }
+  }, [user]);
+
+  const fetchWorkflows = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('workflows')
+        .select('*')
+        .eq('user_id', user!.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setWorkflows(data || []);
+    } catch (error) {
+      console.error('Error fetching workflows:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateWorkflowStatus = async (workflowId: string, newStatus: 'active' | 'paused') => {
+    try {
+      const { error } = await supabase
+        .from('workflows')
+        .update({ 
+          status: newStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', workflowId)
+        .eq('user_id', user!.id);
+
+      if (error) throw error;
+      
+      // Refresh workflows
+      fetchWorkflows();
+    } catch (error) {
+      console.error('Error updating workflow:', error);
+    }
+  };
 
   const filteredWorkflows = workflows.filter(workflow => {
     const matchesSearch = workflow.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || workflow.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const formatLastRun = (lastRun: string | null) => {
+    if (!lastRun) return 'Never';
+    const date = new Date(lastRun);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} hours ago`;
+    return `${Math.floor(diffInMinutes / 1440)} days ago`;
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -103,7 +125,7 @@ export default function Workflows() {
         </div>
         <button className="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
           <Plus className="mr-2 h-4 w-4" />
-          Create Workflow
+          New Workflow
         </button>
       </div>
 
@@ -173,30 +195,39 @@ export default function Workflows() {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Success Rate:</span>
-                    <span className="font-medium text-gray-900">{workflow.successRate}%</span>
+                    <span className="font-medium text-gray-900">{workflow.success_rate}%</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">Last Run:</span>
-                    <span className="font-medium text-gray-900">{workflow.lastRun}</span>
+                    <span className="font-medium text-gray-900">{formatLastRun(workflow.last_run)}</span>
                   </div>
                 </div>
 
                 <div className="mt-6 flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     {workflow.status === 'active' && (
-                      <button className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                      <button 
+                        onClick={() => updateWorkflowStatus(workflow.id, 'paused')}
+                        className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                      >
                         <Pause className="mr-1 h-4 w-4" />
                         Pause
                       </button>
                     )}
                     {workflow.status === 'paused' && (
-                      <button className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                      <button 
+                        onClick={() => updateWorkflowStatus(workflow.id, 'active')}
+                        className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                      >
                         <Play className="mr-1 h-4 w-4" />
                         Resume
                       </button>
                     )}
                     {workflow.status === 'failed' && (
-                      <button className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                      <button 
+                        onClick={() => updateWorkflowStatus(workflow.id, 'active')}
+                        className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                      >
                         <Play className="mr-1 h-4 w-4" />
                         Restart
                       </button>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { Eye, EyeOff, Copy, Plus, Trash2, Key } from 'lucide-react';
 
 const apiKeys = [
@@ -21,6 +22,7 @@ const apiKeys = [
 ];
 
 export default function Settings() {
+  const { profile } = useAuth();
   const [showKeys, setShowKeys] = useState({});
   const [newKeyName, setNewKeyName] = useState('');
   const [showNewKeyForm, setShowNewKeyForm] = useState(false);
@@ -47,7 +49,7 @@ export default function Settings() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Manage your API keys and account settings.
+          Manage your API keys and account settings for {profile?.company || 'your account'}.
         </p>
       </div>
 

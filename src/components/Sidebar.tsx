@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { 
   LayoutDashboard, 
   BarChart3, 
@@ -25,6 +26,16 @@ const navigation = [
 ];
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
+  const { signOut, profile } = useAuth();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   return (
     <>
       {/* Mobile backdrop */}
@@ -45,7 +56,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600">
               <Zap className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-gray-900">AutoFlow</span>
+            <span className="text-xl font-bold text-gray-900">ZK.AI</span>
           </div>
           <button
             onClick={onClose}
@@ -77,9 +88,20 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           </div>
 
           <div className="mt-8 pt-6 border-t border-gray-200">
-            <button className="group flex w-full items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-colors">
+            <div className="px-3 py-2 mb-2">
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {profile?.company || 'Account'}
+              </p>
+              <p className="text-sm text-gray-700 truncate">
+                {profile?.full_name || profile?.email}
+              </p>
+            </div>
+            <button 
+              onClick={handleSignOut}
+              className="group flex w-full items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-50 hover:text-gray-900 transition-colors"
+            >
               <LogOut className="mr-3 h-5 w-5 flex-shrink-0" />
-              Logout
+              Sign Out
             </button>
           </div>
         </nav>

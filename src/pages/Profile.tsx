@@ -1,8 +1,31 @@
 import React, { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import { User, Mail, Lock, Bell, Shield } from 'lucide-react';
 
 export default function Profile() {
+  const { profile, updateProfile } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    full_name: profile?.full_name || '',
+    company: profile?.company || '',
+    email: profile?.email || '',
+  });
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      await updateProfile(formData);
+      alert('Profile updated successfully!');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Error updating profile. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const tabs = [
     { id: 'profile', name: 'Profile Information', icon: User },
@@ -44,72 +67,87 @@ export default function Profile() {
         <div className="p-6">
           {activeTab === 'profile' && (
             <div className="space-y-6">
-              <div className="flex items-center space-x-6">
-                <div className="h-20 w-20 rounded-full bg-indigo-600 flex items-center justify-center">
-                  <span className="text-2xl font-medium text-white">JD</span>
+              <form onSubmit={handleUpdateProfile}>
+                <div className="flex items-center space-x-6 mb-6">
+                  <div className="h-20 w-20 rounded-full bg-indigo-600 flex items-center justify-center overflow-hidden">
+                    {profile?.avatar_url ? (
+                      <img 
+                        src={profile.avatar_url} 
+                        alt={profile.full_name || profile.email}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-2xl font-medium text-white">
+                        {profile?.full_name?.charAt(0) || profile?.email?.charAt(0) || 'U'}
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <button 
+                      type="button"
+                      className="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    >
+                      Change Photo
+                    </button>
+                    <p className="mt-1 text-sm text-gray-500">
+                      JPG, GIF or PNG. 1MB max.
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <button className="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-                    Change Photo
-                  </button>
-                  <p className="mt-1 text-sm text-gray-500">
-                    JPG, GIF or PNG. 1MB max.
-                  </p>
+
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Full Name</label>
+                    <input
+                      type="text"
+                      value={formData.full_name}
+                      onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    />
+                  </div>
                 </div>
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Email Address</label>
+                    <input
+                      type="email"
+                      value={formData.email}
+                      disabled
+                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-gray-50 text-gray-500"
+                    />
+                    <p className="mt-1 text-sm text-gray-500">Email cannot be changed</p>
+                  </div>
 
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">First Name</label>
-                  <input
-                    type="text"
-                    defaultValue="John"
-                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                  />
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Company</label>
+                    <input
+                      type="text"
+                      value={formData.company}
+                      onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                      className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Time Zone</label>
+                    <select className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                      <option>UTC-08:00 (Pacific Time)</option>
+                      <option>UTC-05:00 (Eastern Time)</option>
+                      <option>UTC+00:00 (GMT)</option>
+                      <option>UTC+01:00 (Central European Time)</option>
+                    </select>
+                  </div>
+
+                  <div className="pt-4">
+                    <button 
+                      type="submit"
+                      disabled={loading}
+                      className="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                    >
+                      {loading ? 'Saving...' : 'Save Changes'}
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Last Name</label>
-                  <input
-                    type="text"
-                    defaultValue="Doe"
-                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Email Address</label>
-                <input
-                  type="email"
-                  defaultValue="john@company.com"
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Company</label>
-                <input
-                  type="text"
-                  defaultValue="Acme Corp"
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Time Zone</label>
-                <select className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
-                  <option>UTC-08:00 (Pacific Time)</option>
-                  <option>UTC-05:00 (Eastern Time)</option>
-                  <option>UTC+00:00 (GMT)</option>
-                  <option>UTC+01:00 (Central European Time)</option>
-                </select>
-              </div>
-
-              <div className="pt-4">
-                <button className="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
-                  Save Changes
-                </button>
-              </div>
+              </form>
             </div>
           )}
 

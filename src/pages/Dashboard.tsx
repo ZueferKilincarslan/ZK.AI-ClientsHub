@@ -1,4 +1,7 @@
 import React from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { useEffect, useState } from 'react';
+import { supabase, Workflow, Analytics } from '../lib/supabase';
 import { 
   Activity, 
   Mail, 
@@ -11,95 +14,107 @@ import {
   ArrowDownRight
 } from 'lucide-react';
 
-const stats = [
-  {
-    name: 'Active Workflows',
-    value: '12',
-    change: '+2.1%',
-    changeType: 'positive',
-    icon: Workflow,
-  },
-  {
-    name: 'Emails Sent',
-    value: '2,847',
-    change: '+12.5%',
-    changeType: 'positive',
-    icon: Mail,
-  },
-  {
-    name: 'Success Rate',
-    value: '94.2%',
-    change: '-0.3%',
-    changeType: 'negative',
-    icon: TrendingUp,
-  },
-  {
-    name: 'Total Executions',
-    value: '18,429',
-    change: '+8.7%',
-    changeType: 'positive',
-    icon: Activity,
-  },
-];
-
-const recentActivity = [
-  {
-    id: 1,
-    workflow: 'Welcome Email Sequence',
-    status: 'completed',
-    time: '2 minutes ago',
-    executions: 15,
-  },
-  {
-    id: 2,
-    workflow: 'Lead Nurturing Campaign',
-    status: 'running',
-    time: '5 minutes ago',
-    executions: 8,
-  },
-  {
-    id: 3,
-    workflow: 'Customer Onboarding',
-    status: 'failed',
-    time: '12 minutes ago',
-    executions: 3,
-  },
-  {
-    id: 4,
-    workflow: 'Weekly Newsletter',
-    status: 'completed',
-    time: '1 hour ago',
-    executions: 1,
-  },
-];
-
-const notifications = [
-  {
-    id: 1,
-    type: 'success',
-    message: 'Welcome Email Sequence completed successfully',
-    time: '5 minutes ago',
-  },
-  {
-    id: 2,
-    type: 'warning',
-    message: 'API rate limit approaching for MailChimp integration',
-    time: '1 hour ago',
-  },
-  {
-    id: 3,
-    type: 'error',
-    message: 'Customer Onboarding workflow failed - check logs',
-    time: '2 hours ago',
-  },
-];
-
 export default function Dashboard() {
+  const { user, profile } = useAuth();
+  const [workflows, setWorkflows] = useState<Workflow[]>([]);
+  const [analytics, setAnalytics] = useState<Analytics[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      fetchDashboardData();
+    }
+  }, [user]);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch workflows
+      const { data: workflowsData, error: workflowsError } = await supabase
+        .from('workflows')
+        .select('*')
+        .eq('user_id', user!.id)
+        .order('updated_at', { ascending: false });
+
+      if (workflowsError) throw workflowsError;
+      setWorkflows(workflowsData || []);
+
+      // Fetch analytics
+      const { data: analyticsData, error: analyticsError } = await supabase
+        .from('analytics')
+        .select('*')
+        .eq('user_id', user!.id)
+        .eq('date', new Date().toISOString().split('T')[0]);
+
+      if (analyticsError) throw analyticsError;
+      setAnalytics(analyticsData || []);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getAnalyticsValue = (metricName: string) => {
+    const metric = analytics.find(a => a.metric_name === metricName);
+    return metric?.metric_value || '0';
+  };
+
+  const stats = [
+    {
+      name: 'Active Workflows',
+      value: workflows.filter(w => w.status === 'active').length.toString(),
+      change: '+2.1%',
+      changeType: 'positive' as const,
+      icon: Workflow,
+    },
+    {
+      name: 'Emails Sent',
+      value: getAnalyticsValue('emails_sent'),
+      change: '+12.5%',
+      changeType: 'positive' as const,
+      icon: Mail,
+    },
+    {
+      name: 'Success Rate',
+      value: getAnalyticsValue('success_rate') + '%',
+      change: '-0.3%',
+      changeType: 'negative' as const,
+      icon: TrendingUp,
+    },
+    {
+      name: 'Total Executions',
+      value: getAnalyticsValue('total_executions'),
+      change: '+8.7%',
+      changeType: 'positive' as const,
+      icon: Activity,
+    },
+  ];
+
+  const recentActivity = workflows.slice(0, 4).map(workflow => ({
+    id: workflow.id,
+    workflow: workflow.name,
+    status: workflow.status === 'active' ? 'completed' : workflow.status === 'failed' ? 'failed' : 'running',
+    time: workflow.last_run ? new Date(workflow.last_run).toLocaleString() : 'Never',
+    executions: workflow.executions,
+  }));
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+        <h1 className="text-2xl font-bold text-gray-900">
+          Welcome back, {profile?.full_name || profile?.email}!
+        </h1>
         <p className="mt-1 text-sm text-gray-500">
           Welcome back! Here's what's happening with your workflows.
         </p>
@@ -167,9 +182,9 @@ export default function Dashboard() {
                   </div>
                   <div className="flex items-center space-x-2">
                     <span className="text-sm text-gray-500">
-                      {activity.executions} executions
+                      {activity.executions.toLocaleString()} executions
                     </span>
-                    {activity.status === 'completed' && (
+                    {(activity.status === 'completed' || activity.status === 'active') && (
                       <CheckCircle className="h-4 w-4 text-green-400" />
                     )}
                     {activity.status === 'running' && (
@@ -184,7 +199,11 @@ export default function Dashboard() {
             </div>
             <div className="mt-6">
               <a
-                href="/workflows"
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.location.href = '/workflows';
+                }}
                 className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
               >
                 View all workflows →
@@ -196,31 +215,35 @@ export default function Dashboard() {
         {/* Notifications */}
         <div className="bg-white shadow rounded-lg">
           <div className="px-4 py-5 sm:p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Notifications</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Updates</h3>
             <div className="space-y-4">
-              {notifications.map((notification) => (
-                <div key={notification.id} className="flex space-x-3">
+              {workflows.slice(0, 3).map((workflow) => (
+                <div key={workflow.id} className="flex space-x-3">
                   <div className="flex-shrink-0">
-                    {notification.type === 'success' && (
+                    {workflow.status === 'active' && (
                       <CheckCircle className="h-5 w-5 text-green-400" />
                     )}
-                    {notification.type === 'warning' && (
+                    {workflow.status === 'paused' && (
                       <AlertCircle className="h-5 w-5 text-yellow-400" />
                     )}
-                    {notification.type === 'error' && (
+                    {workflow.status === 'failed' && (
                       <AlertCircle className="h-5 w-5 text-red-400" />
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm text-gray-900">{notification.message}</p>
-                    <p className="text-sm text-gray-500">{notification.time}</p>
+                    <p className="text-sm text-gray-900">
+                      {workflow.name} is {workflow.status}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {workflow.executions.toLocaleString()} total executions
+                    </p>
                   </div>
                 </div>
               ))}
             </div>
             <div className="mt-6">
               <button className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                View all notifications →
+                View all workflows →
               </button>
             </div>
           </div>
@@ -236,7 +259,7 @@ export default function Dashboard() {
               <div className="flex items-center space-x-3">
                 <Workflow className="h-6 w-6 text-indigo-600" />
                 <span className="text-sm font-medium text-gray-900">
-                  Create New Workflow
+                  View Workflows
                 </span>
               </div>
             </button>

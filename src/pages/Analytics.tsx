@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase, Analytics as AnalyticsType, Workflow } from '../lib/supabase';
 import { Calendar, Filter, Download, TrendingUp, Mail, Workflow, Users } from 'lucide-react';
 
 const timeRanges = [
@@ -8,39 +11,91 @@ const timeRanges = [
   { label: 'Last year', value: '1y' },
 ];
 
-const metrics = [
-  {
-    name: 'Total Executions',
-    value: '24,847',
-    change: '+12.5%',
-    changeType: 'positive',
-    icon: Workflow,
-  },
-  {
-    name: 'Success Rate',
-    value: '94.2%',
-    change: '+2.1%',
-    changeType: 'positive',
-    icon: TrendingUp,
-  },
-  {
-    name: 'Emails Sent',
-    value: '18,429',
-    change: '+8.7%',
-    changeType: 'positive',
-    icon: Mail,
-  },
-  {
-    name: 'Active Users',
-    value: '1,247',
-    change: '+5.3%',
-    changeType: 'positive',
-    icon: Users,
-  },
-];
-
 export default function Analytics() {
+  const { user } = useAuth();
+  const [analytics, setAnalytics] = useState<AnalyticsType[]>([]);
+  const [workflows, setWorkflows] = useState<Workflow[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedTimeRange, setSelectedTimeRange] = useState('30d');
+
+  useEffect(() => {
+    if (user) {
+      fetchAnalyticsData();
+    }
+  }, [user, selectedTimeRange]);
+
+  const fetchAnalyticsData = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch analytics data
+      const { data: analyticsData, error: analyticsError } = await supabase
+        .from('analytics')
+        .select('*')
+        .eq('user_id', user!.id)
+        .order('date', { ascending: false });
+
+      if (analyticsError) throw analyticsError;
+      setAnalytics(analyticsData || []);
+
+      // Fetch workflows for detailed metrics
+      const { data: workflowsData, error: workflowsError } = await supabase
+        .from('workflows')
+        .select('*')
+        .eq('user_id', user!.id);
+
+      if (workflowsError) throw workflowsError;
+      setWorkflows(workflowsData || []);
+    } catch (error) {
+      console.error('Error fetching analytics data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getAnalyticsValue = (metricName: string) => {
+    const metric = analytics.find(a => a.metric_name === metricName);
+    return metric?.metric_value || '0';
+  };
+
+  const metrics = [
+    {
+      name: 'Total Executions',
+      value: getAnalyticsValue('total_executions'),
+      change: '+12.5%',
+      changeType: 'positive' as const,
+      icon: Workflow,
+    },
+    {
+      name: 'Success Rate',
+      value: getAnalyticsValue('success_rate') + '%',
+      change: '+2.1%',
+      changeType: 'positive' as const,
+      icon: TrendingUp,
+    },
+    {
+      name: 'Emails Sent',
+      value: getAnalyticsValue('emails_sent'),
+      change: '+8.7%',
+      changeType: 'positive' as const,
+      icon: Mail,
+    },
+    {
+      name: 'Active Workflows',
+      value: workflows.filter(w => w.status === 'active').length.toString(),
+      change: '+5.3%',
+      changeType: 'positive' as const,
+      icon: Users,
+    },
+  ];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -179,45 +234,29 @@ export default function Analytics() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    Welcome Email Sequence
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1,247</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                      98.2%
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2.3s</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2 minutes ago</td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    Lead Nurturing Campaign
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">892</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                      94.7%
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">4.1s</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">15 minutes ago</td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    Customer Onboarding
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">634</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                      87.3%
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">6.8s</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">1 hour ago</td>
-                </tr>
+                {workflows.map((workflow) => (
+                  <tr key={workflow.id}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {workflow.name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {workflow.executions.toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        workflow.success_rate >= 95 ? 'bg-green-100 text-green-800' :
+                        workflow.success_rate >= 80 ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {workflow.success_rate}%
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">2.3s</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {workflow.last_run ? new Date(workflow.last_run).toLocaleString() : 'Never'}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
