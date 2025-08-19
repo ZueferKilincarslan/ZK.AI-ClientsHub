@@ -5,7 +5,7 @@ import { supabase, Workflow, Analytics } from '../lib/supabase';
 import { 
   Activity, 
   Mail, 
-  Workflow, 
+  Workflow as WorkflowIcon, 
   TrendingUp, 
   Clock, 
   CheckCircle, 
@@ -67,7 +67,7 @@ export default function Dashboard() {
       value: workflows.filter(w => w.status === 'active').length.toString(),
       change: '+2.1%',
       changeType: 'positive' as const,
-      icon: Workflow,
+      icon: WorkflowIcon,
     },
     {
       name: 'Emails Sent',
@@ -257,7 +257,7 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <button className="relative rounded-lg border border-gray-300 bg-white px-6 py-4 text-left shadow-sm hover:shadow-md transition-shadow focus:outline-none focus:ring-2 focus:ring-indigo-500">
               <div className="flex items-center space-x-3">
-                <Workflow className="h-6 w-6 text-indigo-600" />
+                <WorkflowIcon className="h-6 w-6 text-indigo-600" />
                 <span className="text-sm font-medium text-gray-900">
                   View Workflows
                 </span>
