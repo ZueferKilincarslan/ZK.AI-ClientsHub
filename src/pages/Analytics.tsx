@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase, Analytics as AnalyticsType, Workflow } from '../lib/supabase';
-import { Calendar, Filter, Download, TrendingUp, Mail, Workflow, Users } from 'lucide-react';
+import { Calendar, Filter, Download, TrendingUp, Mail, Workflow as WorkflowIcon, Users } from 'lucide-react';
 
 const timeRanges = [
   { label: 'Last 7 days', value: '7d' },
@@ -64,7 +64,7 @@ export default function Analytics() {
       value: getAnalyticsValue('total_executions'),
       change: '+12.5%',
       changeType: 'positive' as const,
-      icon: Workflow,
+      icon: WorkflowIcon,
     },
     {
       name: 'Success Rate',

@@ -1,0 +1,17 @@
+{
+  "coreFiles": {
+    "description": "Core entry files that must never be deleted",
+    "files": [
+      "index.html",
+      "src/main.tsx", 
+      "src/App.tsx",
+      "src/index.css"
+    ],
+    "rule": "These files must always exist and be updated, never removed"
+  },
+  "project": {
+    "name": "ZK.AI Client Portal",
+    "type": "customer-portal",
+    "database": "supabase"
+  }
+}

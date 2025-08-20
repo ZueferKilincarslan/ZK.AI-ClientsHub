@@ -65,9 +65,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('id', userId)
         .single();
 
-      if (error) {
+      if (error && error.code !== 'PGRST116') {
         console.error('Error fetching profile:', error);
-      } else {
+      } else if (data) {
         setProfile(data);
       }
     } catch (error) {

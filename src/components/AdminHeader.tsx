@@ -1,12 +1,12 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Menu, Bell, Search } from 'lucide-react';
+import { Menu, Bell, Search, Crown } from 'lucide-react';
 
-interface HeaderProps {
+interface AdminHeaderProps {
   onMenuClick: () => void;
 }
 
-export default function Header({ onMenuClick }: HeaderProps) {
+export default function AdminHeader({ onMenuClick }: AdminHeaderProps) {
   const { profile } = useAuth();
 
   return (
@@ -27,7 +27,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
               </div>
               <input
                 type="text"
-                placeholder="Search workflows, analytics..."
+                placeholder="Search clients, workflows..."
                 className="block w-80 rounded-lg border border-purple-500/30 bg-slate-800/50 py-2 pl-10 pr-3 text-sm placeholder-purple-400 text-white focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-400 backdrop-blur-sm"
               />
             </div>
@@ -35,6 +35,11 @@ export default function Header({ onMenuClick }: HeaderProps) {
         </div>
 
         <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 px-3 py-1 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-medium">
+            <Crown className="h-3 w-3" />
+            <span>Admin</span>
+          </div>
+
           <button className="relative rounded-full p-2 text-purple-300 hover:bg-purple-500/20 hover:text-purple-100 transition-colors">
             <Bell className="h-5 w-5" />
             <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-gradient-to-r from-pink-500 to-red-500 text-xs text-white flex items-center justify-center">
@@ -52,13 +57,13 @@ export default function Header({ onMenuClick }: HeaderProps) {
                 />
               ) : (
                 <span className="text-sm font-medium text-white">
-                  {profile?.full_name?.charAt(0) || profile?.email?.charAt(0) || 'U'}
+                  {profile?.full_name?.charAt(0) || profile?.email?.charAt(0) || 'A'}
                 </span>
               )}
             </div>
             <div className="hidden sm:block">
               <p className="text-sm font-medium text-white">
-                {profile?.full_name || 'User'}
+                {profile?.full_name || 'Admin'}
               </p>
               <p className="text-xs text-purple-300">{profile?.email}</p>
             </div>

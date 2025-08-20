@@ -4,7 +4,7 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables');
+  throw new Error('Missing Supabase environment variables. Please connect to Supabase using the button in the top right.');
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -14,10 +14,11 @@ export interface Profile {
   id: string;
   email: string;
   full_name?: string;
-  company?: string;
   avatar_url?: string;
   created_at: string;
   updated_at: string;
+  role: 'client' | 'admin';
+  organization_id?: string;
 }
 
 export interface Workflow {
