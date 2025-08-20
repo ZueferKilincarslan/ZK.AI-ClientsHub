@@ -294,9 +294,14 @@ export default function ClientDetail() {
                   {client.workflows.slice(0, 5).map((workflow) => (
                     <div key={workflow.id} className="flex items-center justify-between py-2">
                       <div className="flex items-center space-x-3">
-                        <div className={`p-2 rounded-lg ${statusConfig[workflow.status].bg}`}>
-                          <statusConfig[workflow.status].icon className={`h-4 w-4 ${statusConfig[workflow.status].color}`} />
-                        </div>
+                        {(() => {
+                          const StatusIcon = statusConfig[workflow.status].icon;
+                          return (
+                            <div className={`p-2 rounded-lg ${statusConfig[workflow.status].bg}`}>
+                              <StatusIcon className={`h-4 w-4 ${statusConfig[workflow.status].color}`} />
+                            </div>
+                          );
+                        })()}
                         <div>
                           <p className="text-sm font-medium text-white">{workflow.name}</p>
                           <p className="text-sm text-purple-300">{workflow.description}</p>

@@ -15,7 +15,6 @@ export default function AuthForm() {
             </div>
           </div>
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
-          <h2 className="mt-6 text-3xl font-bold text-white">
             Welcome to ZK.AI
           </h2>
           <p className="mt-2 text-sm text-purple-300">
@@ -75,6 +74,4 @@ export default function AuthForm() {
       </div>
     </div>
   );
-}
-  )
 }
