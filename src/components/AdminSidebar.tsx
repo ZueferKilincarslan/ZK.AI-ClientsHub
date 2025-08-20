@@ -2,30 +2,27 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { 
-  LayoutDashboard, 
-  BarChart3, 
+  Users, 
   Workflow, 
   Settings, 
-  User, 
   LogOut,
   X,
-  Zap
+  Zap,
+  Crown
 } from 'lucide-react';
 
-interface SidebarProps {
+interface AdminSidebarProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-  { name: 'Workflows', href: '/workflows', icon: Workflow },
+  { name: 'Clients', href: '/clients', icon: Users },
+  { name: 'All Workflows', href: '/workflows', icon: Workflow },
   { name: 'Settings', href: '/settings', icon: Settings },
-  { name: 'Profile', href: '/profile', icon: User },
 ];
 
-export default function Sidebar({ isOpen, onClose }: SidebarProps) {
+export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const { signOut, profile } = useAuth();
 
   const handleSignOut = async () => {
@@ -41,7 +38,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       {/* Mobile backdrop */}
       {isOpen && (
         <div 
-          className="fixed inset-0 z-40 bg-gray-600 bg-opacity-75 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
           onClick={onClose}
         />
       )}
@@ -59,6 +56,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
               ZK.AI
             </span>
+            <div className="flex items-center space-x-1 px-2 py-1 rounded-full bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30">
+              <Crown className="h-3 w-3 text-purple-400" />
+              <span className="text-xs text-purple-300 font-medium">Admin</span>
+            </div>
           </div>
           <button
             onClick={onClose}
@@ -92,7 +93,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           <div className="mt-8 pt-6 border-t border-purple-500/20">
             <div className="px-3 py-2 mb-2">
               <p className="text-xs font-medium text-purple-400 uppercase tracking-wider">
-                Account
+                Administrator
               </p>
               <p className="text-sm text-purple-200 truncate">
                 {profile?.full_name || profile?.email}
