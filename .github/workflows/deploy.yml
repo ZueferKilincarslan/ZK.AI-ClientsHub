@@ -1,0 +1,38 @@
+name: Build and Upload to Strato
+
+on:
+  push:
+    branches:
+      - main
+
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Schritt 1: Checkout des Repositories
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Schritt 2: Installiere Abhängigkeiten und baue das Projekt (falls notwendig)
+      - name: Install dependencies and build project
+        run: |
+          npm install # oder ein anderer Build-Befehl, je nachdem wie dein Projekt aufgebaut ist
+          npm run build # falls du einen Build-Befehl hast
+
+      # Schritt 3: Installiere sshpass für die Verbindung mit SFTP
+      - name: Install sshpass
+        run: sudo apt-get install -y sshpass
+
+      # Schritt 4: Bereinigen von node_modules (löscht den Ordner lokal)
+      - name: Remove node_modules directory
+        run: rm -rf node_modules
+
+      # Schritt 5: Lade das Projekt zu Strato hoch
+      - name: Upload to Strato
+        run: |
+          echo "Uploading project to Strato server..."
+          sshpass -p "${{ secrets.STRATO_FTP_APP_PASSWORT }}" sftp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "${{ secrets.STRATO_FTP_APP_USER }}@${{ secrets.STRATO_FTP_APP_HOST }}:/" <<EOF
+            put -r *
+          EOF
