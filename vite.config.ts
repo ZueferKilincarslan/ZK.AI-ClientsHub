@@ -4,22 +4,22 @@ import react from '@vitejs/plugin-react';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: './',
+  base: '/',
   build: {
     outDir: 'dist',
-    assetsDir: 'assets',
+    assetsDir: '_assets',
     sourcemap: false,
+    emptyOutDir: true,
     rollupOptions: {
       output: {
-        manualChunks: undefined,
+        entryFileNames: '_assets/[name]-[hash].js',
+        chunkFileNames: '_assets/[name]-[hash].js',
+        assetFileNames: '_assets/[name]-[hash].[ext]'
       },
     },
   },
   optimizeDeps: {
     exclude: ['lucide-react'],
-  },
-  server: {
-    historyApiFallback: true,
   },
   preview: {
     port: 4173,
