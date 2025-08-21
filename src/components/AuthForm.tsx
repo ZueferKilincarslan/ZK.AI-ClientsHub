@@ -1,10 +1,20 @@
 import React from 'react';
+import { useEffect } from 'react';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from '../lib/supabase';
 import { Zap } from 'lucide-react';
 
 export default function AuthForm() {
+  useEffect(() => {
+    // Signal render completion for pre-rendering
+    if (typeof window !== 'undefined') {
+      setTimeout(() => {
+        document.dispatchEvent(new Event('render-event'));
+      }, 1000);
+    }
+  }, []);
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -14,9 +24,9 @@ export default function AuthForm() {
               <Zap className="h-10 w-10 text-white" />
             </div>
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">
+          <h1 className="mt-6 text-3xl font-bold text-white">
             Welcome to ZK.AI
-          </h2>
+          </h1>
           <p className="mt-2 text-sm text-purple-300">
             Access your client portal and manage your AI workflows
           </p>
