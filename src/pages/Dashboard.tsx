@@ -1,6 +1,7 @@
 import React from 'react';
+import { useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { supabase, Workflow, Analytics } from '../lib/supabase';
 import { 
   Activity, 
@@ -21,6 +22,13 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Signal render completion for pre-rendering
+    if (typeof window !== 'undefined') {
+      setTimeout(() => {
+        document.dispatchEvent(new Event('render-event'));
+      }, 1000);
+    }
+
     if (user) {
       fetchDashboardData();
     }
