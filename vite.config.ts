@@ -14,6 +14,8 @@ export default defineConfig({
         '/settings',
         '/profile'
       ],
+    }
+    )
     react()
   ],
   base: '/',
