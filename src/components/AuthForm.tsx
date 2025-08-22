@@ -2,7 +2,7 @@ import React from 'react';
 import { useEffect } from 'react';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
-import { supabase } from '../lib/supabase';
+import { supabase, hasSupabaseConfig } from '../lib/supabase';
 import { Zap } from 'lucide-react';
 
 export default function AuthForm() {
@@ -15,6 +15,42 @@ export default function AuthForm() {
     }
   }, []);
 
+  // Show error if Supabase is not configured
+  if (!hasSupabaseConfig || !supabase) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div className="text-center">
+            <div className="flex justify-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-red-600 to-pink-600 shadow-2xl">
+                <Zap className="h-10 w-10 text-white" />
+              </div>
+            </div>
+            <h1 className="mt-6 text-3xl font-bold text-white">
+              Configuration Required
+            </h1>
+            <p className="mt-2 text-sm text-purple-300">
+              Please connect to Supabase to enable authentication
+            </p>
+          </div>
+          
+          <div className="bg-slate-800/50 backdrop-blur-xl py-8 px-6 shadow-2xl rounded-2xl border border-purple-500/20">
+            <div className="text-center">
+              <p className="text-purple-300 mb-4">
+                Click the "Connect to Supabase" button in the top right corner to set up authentication.
+              </p>
+              <button 
+                onClick={() => window.location.reload()}
+                className="inline-flex items-center px-4 py-2 border border-purple-500/30 text-sm font-medium rounded-lg text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 hover:text-white transition-all duration-200"
+              >
+                Refresh Page
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
