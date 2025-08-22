@@ -39,6 +39,13 @@ export default function AuthForm() {
               <p className="text-purple-300 mb-4">
                 Click the "Connect to Supabase" button in the top right corner to set up authentication.
               </p>
+              <div className="text-xs text-purple-400 mb-4">
+                <p>Environment variables needed:</p>
+                <ul className="mt-2 space-y-1 text-left">
+                  <li>• VITE_SUPABASE_URL</li>
+                  <li>• VITE_SUPABASE_ANON_KEY</li>
+                </ul>
+              </div>
               <button 
                 onClick={() => window.location.reload()}
                 className="inline-flex items-center px-4 py-2 border border-purple-500/30 text-sm font-medium rounded-lg text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 hover:text-white transition-all duration-200"
@@ -51,6 +58,7 @@ export default function AuthForm() {
       </div>
     );
   }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">

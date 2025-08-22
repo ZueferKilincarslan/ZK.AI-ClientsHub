@@ -1,16 +1,39 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-// Check if environment variables are available
-export const hasSupabaseConfig = !!(supabaseUrl && supabaseAnonKey);
+// Debug logging for environment variables
+console.log('Supabase Config Check:', {
+  hasUrl: !!supabaseUrl,
+  hasKey: !!supabaseAnonKey,
+  url: supabaseUrl ? `${supabaseUrl.substring(0, 20)}...` : 'missing'
+});
+
+// Check if environment variables are available and valid
+export const hasSupabaseConfig = !!(
+  supabaseUrl && 
+  supabaseAnonKey && 
+  supabaseUrl.startsWith('https://') &&
+  supabaseAnonKey.length > 20
+);
 
 // Create Supabase client only if config is available
 export const supabase = hasSupabaseConfig 
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
 
+// Test Supabase connection
+export const testSupabaseConnection = async () => {
+  if (!supabase) return { success: false, error: 'Supabase not configured' };
+  
+  try {
+    const { data, error } = await supabase.auth.getSession();
+    return { success: !error, error: error?.message };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
+  }
+};
 // Database types
 export interface Profile {
   id: string;
