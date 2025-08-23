@@ -6,12 +6,18 @@ import ClientPortal from './components/ClientPortal';
 import AdminPortal from './components/AdminPortal';
 
 function AppContent() {
-  const { user, loading, error, connectionTested, retryConnection } = useAuth();
+  const { user, loading, error, profile } = useAuth();
 
-  console.log('App state:', { user: !!user, loading, error, connectionTested });
+  console.log('🎯 App state:', { 
+    hasUser: !!user, 
+    loading, 
+    hasError: !!error, 
+    userRole: profile?.role 
+  });
 
-  // Show error state if Supabase is not configured or there's an auth error
+  // Show error state if there's an authentication error
   if (error) {
+    console.log('❌ Showing error state:', error);
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
         <div className="max-w-md w-full space-y-8 text-center">
@@ -26,7 +32,7 @@ function AppContent() {
           <p className="mt-2 text-sm text-purple-300">{error}</p>
           <div className="space-y-3">
             <button 
-              onClick={retryConnection}
+              onClick={() => window.location.reload()}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
             >
               Retry Connection
@@ -45,8 +51,9 @@ function AppContent() {
     );
   }
 
-  // Show loading only while checking auth state and connection hasn't been tested yet
-  if (loading && !connectionTested) {
+  // Show loading only briefly while checking auth state
+  if (loading) {
+    console.log('⏳ Showing loading state');
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
         <div className="max-w-md w-full space-y-8 text-center">
@@ -69,24 +76,19 @@ function AppContent() {
   }
 
   // Show login form if no user is authenticated
-  if (!user && connectionTested) {
+  if (!user) {
+    console.log('🔐 Showing login form - no user authenticated');
     return <AuthForm />;
   }
 
-  // Show appropriate portal based on user role (only if user exists)
-  if (user) {
+  // Show appropriate portal based on user role
+  console.log('🏠 User authenticated, showing portal for role:', profile?.role || 'client');
+  
+  if (profile?.role === 'admin') {
+    return <AdminPortal />;
+  } else {
     return <ClientPortal />;
   }
-
-  // Fallback loading state (shouldn't reach here normally)
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-400 mx-auto"></div>
-        <p className="mt-4 text-purple-300">Loading...</p>
-      </div>
-    </div>
-  );
 }
 
 export default function App() {
