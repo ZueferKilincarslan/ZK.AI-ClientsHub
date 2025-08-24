@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -10,16 +9,27 @@ export default defineConfig({
   base: '/',
   build: {
     outDir: 'dist',
-    assetsDir: '_assets',
-    sourcemap: false,
+    assetsDir: 'assets',
+    sourcemap: true,
     emptyOutDir: true,
-    rollupOptions: {
-      output: {
-        entryFileNames: '_assets/[name]-[hash].js',
-        chunkFileNames: '_assets/[name]-[hash].js',
-        assetFileNames: '_assets/[name]-[hash].[ext]'
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
       },
     },
+    rollupOptions: {
+      output: {
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]'
+      },
+    },
+  },
+  server: {
+    port: 5173,
+    host: true
   },
   optimizeDeps: {
     exclude: ['lucide-react'],
@@ -27,5 +37,6 @@ export default defineConfig({
   preview: {
     port: 4173,
     strictPort: true,
+    host: true
   },
 });

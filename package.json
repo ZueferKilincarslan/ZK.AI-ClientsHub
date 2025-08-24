@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && npm run postbuild",
-    "postbuild": "echo 'Pre-rendering completed. Static HTML files generated in dist/'",
+    "build": "vite build",
+    "postbuild": "echo 'Build completed. Static files generated in dist/'",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "serve": "npx serve dist"
   },
   "dependencies": {
     "@supabase/auth-ui-react": "^0.4.7",
@@ -32,8 +33,9 @@
     "globals": "^15.9.0",
     "postcss": "^8.4.41",
     "tailwindcss": "^3.4.10",
+    "terser": "^5.43.1",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
     "vite": "^5.4.1"
-}
+  }
 }
