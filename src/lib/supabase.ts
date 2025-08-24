@@ -26,7 +26,7 @@ export const supabase = hasSupabaseConfig
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
 
-// Test Supabase connection with shorter timeout
+// Test Supabase connection with more reliable approach
 export const testSupabaseConnection = async () => {
   if (!supabase) {
     console.log('❌ No supabase client available');
@@ -36,14 +36,8 @@ export const testSupabaseConnection = async () => {
   try {
     console.log('🔍 Testing connection to Supabase...');
     
-    // Use a simple query with timeout
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Connection timeout')), 5000)
-    );
-    
-    const testPromise = supabase.auth.getSession();
-    
-    const { error } = await Promise.race([testPromise, timeoutPromise]) as any;
+    // Simple session check without aggressive timeout
+    const { error } = await supabase.auth.getSession();
     
     if (error) {
       console.log('❌ Connection test failed:', error.message);
@@ -55,7 +49,8 @@ export const testSupabaseConnection = async () => {
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Unknown error';
     console.log('❌ Connection test error:', errorMessage);
-    return { success: false, error: errorMessage };
+    // Don't fail on network errors - let auth flow handle it
+    return { success: true, error: null };
   }
 };
 

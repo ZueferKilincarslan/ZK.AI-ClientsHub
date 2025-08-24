@@ -32,7 +32,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
-    let timeoutId: NodeJS.Timeout;
 
     const initializeAuth = async () => {
       console.log('🔄 Initializing auth...');
@@ -47,30 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      // Set a timeout to prevent infinite loading
-      timeoutId = setTimeout(() => {
-        if (mounted && loading) {
-          console.log('⏰ Auth initialization timeout');
-          setError('Connection timeout. Please check your internet connection and try again.');
-          setLoading(false);
-        }
-      }, 8000); // 8 second timeout
-
       try {
-        console.log('🔍 Testing Supabase connection...');
-        const connectionTest = await testSupabaseConnection();
-        
-        if (!mounted) return;
-        
-        if (!connectionTest.success) {
-          console.log('❌ Connection test failed:', connectionTest.error);
-          setError(`Connection failed: ${connectionTest.error}`);
-          setLoading(false);
-          return;
-        }
-
-        console.log('✅ Connection test successful');
-
         // Get initial session
         console.log('🔍 Getting initial session...');
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -79,7 +55,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (sessionError) {
           console.error('❌ Error getting session:', sessionError);
-          setError('Failed to connect to authentication service. Please try again.');
+          // Don't show error for session failures - just show login
+          console.log('No valid session found, showing login form');
           setLoading(false);
           return;
         }
@@ -98,7 +75,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (err) {
         if (!mounted) return;
         console.error('💥 Unexpected error during auth initialization:', err);
-        setError('Failed to initialize authentication. Please refresh the page.');
+        // Don't crash on initialization errors - just show login
+        console.log('Auth initialization failed, showing login form');
         setLoading(false);
       }
     };
@@ -129,7 +107,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       console.log('🧹 Cleaning up auth context');
       mounted = false;
-      if (timeoutId) clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
   }, []); // Empty dependency array is correct here

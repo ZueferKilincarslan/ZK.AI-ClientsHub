@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && npm run postbuild",
-    "postbuild": "echo 'Pre-rendering completed. Static HTML files generated in dist/'",
+    "build": "vite build",
+    "postbuild": "echo 'Build completed. Static files generated in dist/'",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "serve": "npx serve dist"
   },
   "dependencies": {
     "@supabase/auth-ui-react": "^0.4.7",

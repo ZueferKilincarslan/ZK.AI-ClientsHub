@@ -32,7 +32,11 @@ function AppContent() {
           <p className="mt-2 text-sm text-purple-300">{error}</p>
           <div className="space-y-3">
             <button 
-              onClick={() => window.location.reload()}
+              onClick={() => {
+                setError(null);
+                setLoading(true);
+                setTimeout(() => window.location.reload(), 100);
+              }}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
             >
               Retry Connection
