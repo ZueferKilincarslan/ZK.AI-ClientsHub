@@ -14,9 +14,4 @@ if (typeof window !== 'undefined') {
       <App />
     </StrictMode>
   );
-  
-  // Signal that rendering is complete for pre-rendering
-  setTimeout(() => {
-    document.dispatchEvent(new Event('render-event'));
-  }, 1500);
 }

@@ -33,7 +33,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: ReturnType<typeof setTimeout>;
 
     const initializeAuth = async () => {
       if (initialized) return;
@@ -59,7 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setLoading(false);
             setInitialized(true);
           }
-        }, 10000); // 10 second timeout
+        }, 3000); // Reduced to 3 seconds
         
         console.log('🔍 Getting initial session...');
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();

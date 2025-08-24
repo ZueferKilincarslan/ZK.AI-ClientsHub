@@ -6,14 +6,6 @@ import { supabase, hasSupabaseConfig } from '../lib/supabase';
 import { Zap } from 'lucide-react';
 
 export default function AuthForm() {
-  useEffect(() => {
-    // Signal render completion for pre-rendering
-    if (typeof window !== 'undefined') {
-      setTimeout(() => {
-        document.dispatchEvent(new Event('render-event'));
-      }, 1000);
-    }
-  }, []);
 
   // Show error if Supabase is not configured
   if (!hasSupabaseConfig || !supabase) {
