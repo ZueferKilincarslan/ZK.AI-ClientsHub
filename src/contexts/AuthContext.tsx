@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { supabase, hasSupabaseConfig, Profile, testSupabaseConnection } from '../lib/supabase';
+import { supabase, hasSupabaseConfig, Profile } from '../lib/supabase';
 
 interface AuthContextType {
   user: User | null;
@@ -10,7 +10,7 @@ interface AuthContextType {
   error: string | null;
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<Profile>) => Promise<void>;
-  retryConnection: () => Promise<void>;
+  createClient: (email: string, password: string, fullName?: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,11 +29,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
     let mounted = true;
+    let timeoutId: NodeJS.Timeout;
 
     const initializeAuth = async () => {
+      if (initialized) return;
+      
       console.log('🔄 Initializing auth...');
       
       // Check if Supabase is configured
@@ -42,22 +46,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (mounted) {
           setError('Supabase is not configured. Please connect to Supabase using the button in the top right.');
           setLoading(false);
+          setInitialized(true);
         }
         return;
       }
 
       try {
-        // Get initial session
+        // Set a reasonable timeout for initialization
+        timeoutId = setTimeout(() => {
+          if (mounted && !initialized) {
+            console.log('⏰ Auth initialization timeout, showing login');
+            setLoading(false);
+            setInitialized(true);
+          }
+        }, 10000); // 10 second timeout
+        
         console.log('🔍 Getting initial session...');
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (!mounted) return;
+        if (!mounted) {
+          clearTimeout(timeoutId);
+          return;
+        }
         
         if (sessionError) {
           console.error('❌ Error getting session:', sessionError);
-          // Don't show error for session failures - just show login
           console.log('No valid session found, showing login form');
+          clearTimeout(timeoutId);
           setLoading(false);
+          setInitialized(true);
           return;
         }
 
@@ -71,13 +88,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else {
           console.log('👤 No user, showing login');
           setLoading(false);
+          setInitialized(true);
         }
+        clearTimeout(timeoutId);
       } catch (err) {
         if (!mounted) return;
         console.error('💥 Unexpected error during auth initialization:', err);
         // Don't crash on initialization errors - just show login
         console.log('Auth initialization failed, showing login form');
         setLoading(false);
+        setInitialized(true);
+        clearTimeout(timeoutId);
       }
     };
 
@@ -86,7 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase?.auth.onAuthStateChange(async (event, session) => {
+    } = supabase?.auth?.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
       
       console.log('🔄 Auth state changed:', event, session ? 'Session exists' : 'No session');
@@ -107,9 +128,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       console.log('🧹 Cleaning up auth context');
       mounted = false;
+      clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
-  }, []); // Empty dependency array is correct here
+  }, [initialized]);
 
   const fetchProfile = async (userId: string) => {
     if (!supabase) {
@@ -143,16 +165,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       console.log('✅ Auth initialization complete');
       setLoading(false);
+      setInitialized(true);
     }
-  };
-
-  const retryConnection = async () => {
-    console.log('🔄 Retrying connection...');
-    setLoading(true);
-    setError(null);
-    
-    // Trigger re-initialization by reloading the page
-    window.location.reload();
   };
 
   const signOut = async () => {
@@ -187,6 +201,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const createClient = async (email: string, password: string, fullName?: string) => {
+    if (!supabase) throw new Error('Supabase not configured');
+
+    try {
+      // Create user with admin privileges
+      const { data, error } = await supabase.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: {
+          full_name: fullName,
+          requires_password_change: true
+        }
+      });
+
+      if (error) throw error;
+
+      // Create profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: data.user.id,
+          email,
+          full_name: fullName,
+          role: 'client'
+        });
+
+      if (profileError) throw profileError;
+    } catch (error) {
+      console.error('Error creating client:', error);
+      throw error;
+    }
+  };
+
   const value = {
     user,
     profile,
@@ -195,7 +243,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     error,
     signOut,
     updateProfile,
-    retryConnection,
+    createClient,
   };
 
   return (

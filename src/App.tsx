@@ -6,7 +6,7 @@ import ClientPortal from './components/ClientPortal';
 import AdminPortal from './components/AdminPortal';
 
 function AppContent() {
-  const { user, loading, error, profile } = useAuth();
+  const { user, loading, error, profile, retryConnection } = useAuth();
 
   console.log('🎯 App state:', { 
     hasUser: !!user, 
@@ -19,7 +19,7 @@ function AppContent() {
   if (error) {
     console.log('❌ Showing error state:', error);
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
         <div className="max-w-md w-full space-y-8 text-center">
           <div className="flex justify-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-red-600 to-pink-600 shadow-2xl">
@@ -32,11 +32,7 @@ function AppContent() {
           <p className="mt-2 text-sm text-purple-300">{error}</p>
           <div className="space-y-3">
             <button 
-              onClick={() => {
-                setError(null);
-                setLoading(true);
-                setTimeout(() => window.location.reload(), 100);
-              }}
+              onClick={() => window.location.reload()}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
             >
               Retry Connection
@@ -59,7 +55,7 @@ function AppContent() {
   if (loading) {
     console.log('⏳ Showing loading state');
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
         <div className="max-w-md w-full space-y-8 text-center">
           <div className="flex justify-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 shadow-2xl">

@@ -17,7 +17,7 @@ export default function AdminPortal() {
       <div className="lg:pl-64">
         <AdminHeader onMenuClick={() => setSidebarOpen(true)} />
         
-        <main className="py-6">
+        <main className="py-6 min-h-screen">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <Routes>
               <Route path="/" element={<AdminClients />} />

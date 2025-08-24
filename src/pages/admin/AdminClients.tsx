@@ -5,11 +5,13 @@ import { supabase, Profile, Workflow } from '../../lib/supabase';
 import { 
   Users, 
   Search, 
-  Upload, 
+  Plus,
   Eye, 
   Activity,
   Calendar,
-  ArrowUpRight
+  ArrowUpRight,
+  Mail,
+  Lock
 } from 'lucide-react';
 
 interface ClientWithWorkflows extends Profile {
@@ -19,11 +21,18 @@ interface ClientWithWorkflows extends Profile {
 }
 
 export default function AdminClients() {
-  const { user } = useAuth();
+  const { user, createClient } = useAuth();
   const [clients, setClients] = useState<ClientWithWorkflows[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [uploadingWorkflow, setUploadingWorkflow] = useState(false);
+  const [showAddClient, setShowAddClient] = useState(false);
+  const [addingClient, setAddingClient] = useState(false);
+  const [newClientData, setNewClientData] = useState({
+    email: '',
+    password: '',
+    fullName: '',
+  });
+  const [addClientError, setAddClientError] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -39,14 +48,16 @@ export default function AdminClients() {
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('role', 'client')
         .order('created_at', { ascending: false });
 
       if (profilesError) throw profilesError;
 
       // Fetch workflows for each client
       const clientsWithWorkflows = await Promise.all(
-        (profiles || []).map(async (profile) => {
+        (profiles || []).filter(profile => 
+          // Filter clients (exclude admins)
+          profile.role !== 'admin'
+        ).map(async (profile) => {
           const { data: workflows, error: workflowsError } = await supabase
             .from('workflows')
             .select('*')
@@ -77,42 +88,56 @@ export default function AdminClients() {
     }
   };
 
-  const handleWorkflowUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const handleAddClient = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAddClientError('');
+
+    if (!newClientData.email || !newClientData.password) {
+      setAddClientError('Email and password are required');
+      return;
+    }
+
+    if (newClientData.password.length < 6) {
+      setAddClientError('Password must be at least 6 characters long');
+      return;
+    }
 
     try {
-      setUploadingWorkflow(true);
-      
-      // Read file content
-      const fileContent = await file.text();
-      const workflowData = JSON.parse(fileContent);
+      setAddingClient(true);
+      await createClient(
+        newClientData.email,
+        newClientData.password,
+        newClientData.fullName || undefined
+      );
 
-      // Call webhook with workflow data
-      const webhookUrl = import.meta.env.VITE_WORKFLOW_WEBHOOK_URL || 'https://your-webhook-url.com/workflow';
-      
-      await fetch(webhookUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          workflow: workflowData,
-          uploadedBy: user?.id,
-          uploadedAt: new Date().toISOString(),
-        }),
+      // Reset form
+      setNewClientData({
+        email: '',
+        password: '',
+        fullName: '',
       });
-
-      alert('Workflow uploaded successfully!');
-      fetchClients(); // Refresh data
-    } catch (error) {
-      console.error('Error uploading workflow:', error);
-      alert('Error uploading workflow. Please try again.');
+      setShowAddClient(false);
+      
+      // Refresh clients list
+      fetchClients();
+      
+      alert('Client created successfully! They will be required to change their password on first login.');
+    } catch (error: any) {
+      console.error('Error creating client:', error);
+      setAddClientError(error.message || 'Failed to create client');
     } finally {
-      setUploadingWorkflow(false);
-      // Reset file input
-      event.target.value = '';
+      setAddingClient(false);
     }
+  };
+
+  const handleCancelAddClient = () => {
+    setShowAddClient(false);
+    setNewClientData({
+      email: '',
+      password: '',
+      fullName: '',
+    });
+    setAddClientError('');
   };
 
   const filteredClients = clients.filter(client =>
@@ -138,7 +163,8 @@ export default function AdminClients() {
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-400"></div>
       </div>
     );
-  }
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -151,27 +177,107 @@ export default function AdminClients() {
           </p>
         </div>
         <div className="flex items-center space-x-3">
-          <input
-            type="file"
-            accept=".json"
-            onChange={handleWorkflowUpload}
-            className="hidden"
-            id="workflow-upload"
-            disabled={uploadingWorkflow}
-          />
-          <label
-            htmlFor="workflow-upload"
-            className={`inline-flex items-center rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 cursor-pointer ${
-              uploadingWorkflow
-                ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                : 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl'
-            }`}
+          <button
+            onClick={() => setShowAddClient(true)}
+            className="inline-flex items-center rounded-lg px-4 py-2 text-sm font-medium bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl transition-all duration-200"
           >
-            <Upload className="mr-2 h-4 w-4" />
-            {uploadingWorkflow ? 'Uploading...' : 'Upload Workflow'}
-          </label>
+            <Plus className="mr-2 h-4 w-4" />
+            Add New Client
+          </button>
         </div>
       </div>
+
+      {/* Add Client Modal */}
+      {showAddClient && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={handleCancelAddClient}></div>
+            
+            <div className="inline-block align-bottom bg-slate-800/95 backdrop-blur-xl rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-purple-500/20">
+              <div className="px-6 py-4 border-b border-purple-500/20">
+                <h3 className="text-lg font-medium text-white">Add New Client</h3>
+                <p className="mt-1 text-sm text-purple-300">Create a new client account with temporary password</p>
+              </div>
+              
+              <form onSubmit={handleAddClient} className="px-6 py-4 space-y-4">
+                {addClientError && (
+                  <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-3">
+                    <p className="text-red-300 text-sm">{addClientError}</p>
+                  </div>
+                )}
+                
+                <div>
+                  <label className="block text-sm font-medium text-purple-300 mb-2">
+                    Email Address *
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-purple-400" />
+                    <input
+                      type="email"
+                      value={newClientData.email}
+                      onChange={(e) => setNewClientData({ ...newClientData, email: e.target.value })}
+                      className="block w-full rounded-lg border border-purple-500/30 bg-slate-700/50 pl-10 pr-3 py-2 text-sm text-white placeholder-purple-400 focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-400"
+                      placeholder="client@example.com"
+                      required
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-purple-300 mb-2">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    value={newClientData.fullName}
+                    onChange={(e) => setNewClientData({ ...newClientData, fullName: e.target.value })}
+                    className="block w-full rounded-lg border border-purple-500/30 bg-slate-700/50 px-3 py-2 text-sm text-white placeholder-purple-400 focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-400"
+                    placeholder="John Doe"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-purple-300 mb-2">
+                    Temporary Password *
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-purple-400" />
+                    <input
+                      type="password"
+                      value={newClientData.password}
+                      onChange={(e) => setNewClientData({ ...newClientData, password: e.target.value })}
+                      className="block w-full rounded-lg border border-purple-500/30 bg-slate-700/50 pl-10 pr-3 py-2 text-sm text-white placeholder-purple-400 focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-400"
+                      placeholder="Temporary password"
+                      required
+                      minLength={6}
+                    />
+                  </div>
+                  <p className="mt-1 text-xs text-purple-400">
+                    Client will be required to change this password on first login
+                  </p>
+                </div>
+                
+                <div className="flex items-center justify-end space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={handleCancelAddClient}
+                    className="px-4 py-2 border border-purple-500/30 text-sm font-medium rounded-lg text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 hover:text-white transition-all duration-200"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={addingClient}
+                    className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-medium rounded-lg hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  >
+                    {addingClient ? 'Creating...' : 'Create Client'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Search */}
       <div className="flex items-center space-x-4">
