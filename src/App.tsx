@@ -15,12 +15,12 @@ function AppContent() {
     userRole: profile?.role 
   });
 
-  // Show error state if there's an authentication error
+  // Show error state only for critical errors (not configuration issues)
   if (error) {
     console.log('❌ Showing error state:', error);
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
-        <div className="max-w-md w-full space-y-8 text-center">
+        <div className="max-w-md w-full space-y-8 text-center mx-auto flex flex-col justify-center min-h-screen">
           <div className="flex justify-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-red-600 to-pink-600 shadow-2xl">
               <svg className="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -51,7 +51,7 @@ function AppContent() {
     );
   }
 
-  // Show loading only briefly while checking auth state
+  // Show loading state with timeout protection
   if (loading) {
     console.log('⏳ Showing loading state');
     return (

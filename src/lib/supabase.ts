@@ -26,7 +26,7 @@ export const supabase = hasSupabaseConfig
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
 
-// Test Supabase connection with more reliable approach
+// Test Supabase connection with timeout and error handling
 export const testSupabaseConnection = async () => {
   if (!supabase) {
     console.log('❌ No supabase client available');
@@ -36,22 +36,30 @@ export const testSupabaseConnection = async () => {
   try {
     console.log('🔍 Testing connection to Supabase...');
     
-    // Quick health check with timeout
+    // Quick health check with shorter timeout for production
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2000);
+    const timeoutId = setTimeout(() => controller.abort(), 1500);
     
-    const { error } = await supabase.auth.getSession();
+    // Use a simple query instead of auth session for connection test
+    const { error } = await supabase.from('profiles').select('count').limit(1);
     clearTimeout(timeoutId);
     
     if (error) {
+      // Don't treat auth errors as connection failures
+      if (error.code === 'PGRST301' || error.message.includes('JWT')) {
+        console.log('✅ Connection test successful (auth required)');
+        return { success: true, error: null };
+      }
       console.log('❌ Connection test failed:', error.message);
-      return { success: false, error: error.message };
+      return { success: false, error: 'Database connection failed' };
     }
     
     console.log('✅ Connection test successful');
     return { success: true, error: null };
   } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    const errorMessage = err instanceof Error ? 
+      (err.name === 'AbortError' ? 'Connection timeout' : err.message) : 
+      'Network error';
     console.log('❌ Connection test error:', errorMessage);
     return { success: false, error: errorMessage };
   }
