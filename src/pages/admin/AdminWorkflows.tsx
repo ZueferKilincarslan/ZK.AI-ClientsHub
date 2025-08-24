@@ -76,7 +76,9 @@ export default function AdminWorkflows() {
       const workflowData = JSON.parse(fileContent);
 
       // Call webhook with workflow data
-      const webhookUrl = import.meta.env.VITE_WORKFLOW_WEBHOOK_URL || 'https://your-webhook-url.com/workflow';
+      const webhookUrl = localStorage.getItem('webhook_url') || 
+                        import.meta.env.VITE_WORKFLOW_WEBHOOK_URL || 
+                        'https://your-webhook-url.com/workflow';
       
       await fetch(webhookUrl, {
         method: 'POST',
@@ -136,14 +138,18 @@ export default function AdminWorkflows() {
 
   const formatLastRun = (lastRun: string | null) => {
     if (!lastRun) return 'Never';
-    const date = new Date(lastRun);
-    const now = new Date();
-    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-    
-    if (diffInMinutes < 1) return 'Just now';
-    if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`;
-    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} hours ago`;
-    return `${Math.floor(diffInMinutes / 1440)} days ago`;
+    try {
+      const date = new Date(lastRun);
+      const now = new Date();
+      const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+      
+      if (diffInMinutes < 1) return 'Just now';
+      if (diffInMinutes < 60) return `${diffInMinutes} minutes ago`;
+      if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} hours ago`;
+      return `${Math.floor(diffInMinutes / 1440)} days ago`;
+    } catch (error) {
+      return 'Invalid date';
+    }
   };
 
   if (loading) {

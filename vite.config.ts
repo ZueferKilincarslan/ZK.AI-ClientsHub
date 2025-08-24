@@ -32,7 +32,7 @@ export default defineConfig({
     host: true
   },
   optimizeDeps: {
-    exclude: ['lucide-react'],
+    include: ['react', 'react-dom', '@supabase/supabase-js'],
   },
   preview: {
     port: 4173,

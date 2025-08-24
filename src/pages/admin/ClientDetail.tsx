@@ -115,7 +115,9 @@ export default function ClientDetail() {
       };
 
       // Call webhook
-      const webhookUrl = import.meta.env.VITE_WORKFLOW_WEBHOOK_URL || 'https://your-n8n-webhook.com/workflow-upload';
+      const webhookUrl = localStorage.getItem('webhook_url') || 
+                        import.meta.env.VITE_WORKFLOW_WEBHOOK_URL || 
+                        'https://your-n8n-webhook.com/workflow-upload';
       
       const response = await fetch(webhookUrl, {
         method: 'POST',

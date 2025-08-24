@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { 
   Settings, 
@@ -12,8 +13,15 @@ import {
 
 export default function AdminSettings() {
   const { profile } = useAuth();
-  const [webhookUrl, setWebhookUrl] = useState('https://your-n8n-instance.com/webhook/workflow-upload');
+  const [webhookUrl, setWebhookUrl] = useState(
+    import.meta.env.VITE_WORKFLOW_WEBHOOK_URL || 'https://your-n8n-instance.com/webhook/workflow-upload'
+  );
   const [apiKey, setApiKey] = useState('');
+  const [testingWebhook, setTestingWebhook] = useState(false);
+  const [webhookTestResult, setWebhookTestResult] = useState<{
+    success: boolean;
+    message: string;
+  } | null>(null);
   const [notifications, setNotifications] = useState({
     newClients: true,
     workflowFailures: true,
@@ -21,12 +29,32 @@ export default function AdminSettings() {
     weeklyReports: false,
   });
 
-  const handleSaveSettings = () => {
-    // Save settings logic here
-    alert('Settings saved successfully!');
+  const handleSaveSettings = async () => {
+    try {
+      // Save webhook URL to localStorage for persistence
+      localStorage.setItem('webhook_url', webhookUrl);
+      localStorage.setItem('api_key', apiKey);
+      localStorage.setItem('notifications', JSON.stringify(notifications));
+      
+      alert('Settings saved successfully!');
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      alert('Error saving settings. Please try again.');
+    }
   };
 
   const handleTestWebhook = async () => {
+    if (!webhookUrl.trim()) {
+      setWebhookTestResult({
+        success: false,
+        message: 'Please enter a webhook URL first'
+      });
+      return;
+    }
+
+    setTestingWebhook(true);
+    setWebhookTestResult(null);
+
     try {
       const response = await fetch(webhookUrl, {
         method: 'POST',
@@ -35,20 +63,50 @@ export default function AdminSettings() {
         },
         body: JSON.stringify({
           test: true,
+          source: 'admin_panel',
           timestamp: new Date().toISOString(),
+          message: 'Test webhook from ZK.AI Admin Panel'
         }),
       });
 
       if (response.ok) {
-        alert('Webhook test successful!');
+        const responseData = await response.text();
+        setWebhookTestResult({
+          success: true,
+          message: `Webhook test successful! Response: ${response.status} ${response.statusText}`
+        });
       } else {
-        alert('Webhook test failed. Please check the URL.');
+        setWebhookTestResult({
+          success: false,
+          message: `Webhook test failed: ${response.status} ${response.statusText}`
+        });
       }
     } catch (error) {
-      alert('Webhook test failed. Please check the URL.');
+      setWebhookTestResult({
+        success: false,
+        message: `Webhook test failed: ${error instanceof Error ? error.message : 'Network error'}`
+      });
+    } finally {
+      setTestingWebhook(false);
     }
   };
 
+  // Load saved settings on component mount
+  useEffect(() => {
+    const savedWebhookUrl = localStorage.getItem('webhook_url');
+    const savedApiKey = localStorage.getItem('api_key');
+    const savedNotifications = localStorage.getItem('notifications');
+
+    if (savedWebhookUrl) setWebhookUrl(savedWebhookUrl);
+    if (savedApiKey) setApiKey(savedApiKey);
+    if (savedNotifications) {
+      try {
+        setNotifications(JSON.parse(savedNotifications));
+      } catch (error) {
+        console.error('Error parsing saved notifications:', error);
+      }
+    }
+  }, []);
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -89,12 +147,22 @@ export default function AdminSettings() {
               />
               <button
                 onClick={handleTestWebhook}
+                disabled={testingWebhook}
                 className="inline-flex items-center px-4 py-2 border border-purple-500/30 text-sm font-medium rounded-lg text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 hover:text-white transition-all duration-200"
               >
                 <TestTube className="mr-2 h-4 w-4" />
-                Test
+                {testingWebhook ? 'Testing...' : 'Test'}
               </button>
             </div>
+            {webhookTestResult && (
+              <div className={`mt-2 p-3 rounded-lg text-sm ${
+                webhookTestResult.success 
+                  ? 'bg-green-500/20 text-green-300 border border-green-500/30' 
+                  : 'bg-red-500/20 text-red-300 border border-red-500/30'
+              }`}>
+                {webhookTestResult.message}
+              </div>
+            )}
             <p className="mt-2 text-xs text-purple-400">
               This webhook will be called when workflows are uploaded via the admin interface.
             </p>

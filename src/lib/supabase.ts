@@ -36,8 +36,12 @@ export const testSupabaseConnection = async () => {
   try {
     console.log('🔍 Testing connection to Supabase...');
     
-    // Simple session check without aggressive timeout
+    // Quick health check with timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2000);
+    
     const { error } = await supabase.auth.getSession();
+    clearTimeout(timeoutId);
     
     if (error) {
       console.log('❌ Connection test failed:', error.message);
@@ -49,8 +53,7 @@ export const testSupabaseConnection = async () => {
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Unknown error';
     console.log('❌ Connection test error:', errorMessage);
-    // Don't fail on network errors - let auth flow handle it
-    return { success: true, error: null };
+    return { success: false, error: errorMessage };
   }
 };
 

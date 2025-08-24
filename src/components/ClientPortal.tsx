@@ -22,7 +22,7 @@ export default function ClientPortal() {
   }
 
   // Check if user needs to change password
-  const requiresPasswordChange = user?.user_metadata?.requires_password_change;
+  const requiresPasswordChange = user?.user_metadata?.requires_password_change === true;
   
   if (requiresPasswordChange) {
     return <ChangePassword />;

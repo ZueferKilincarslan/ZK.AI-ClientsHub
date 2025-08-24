@@ -55,20 +55,12 @@ function AppContent() {
   if (loading) {
     console.log('⏳ Showing loading state');
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
-        <div className="max-w-md w-full space-y-8 text-center">
-          <div className="flex justify-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 shadow-2xl">
-              <svg className="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-              </svg>
-            </div>
-          </div>
-          <h1 className="mt-6 text-3xl font-bold text-white">ZK.AI</h1>
-          <p className="mt-2 text-sm text-purple-300">Initializing your workspace...</p>
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-400 mx-auto"></div>
-          <div className="text-xs text-purple-400 mt-4">
-            This should only take a few seconds...
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400 mx-auto"></div>
+          <div className="mt-4">
+            <h1 className="text-xl font-bold text-white">ZK.AI</h1>
+            <p className="text-sm text-purple-300 mt-2">Loading your workspace...</p>
           </div>
         </div>
       </div>

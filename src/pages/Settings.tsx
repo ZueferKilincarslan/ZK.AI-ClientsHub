@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Eye, EyeOff, Copy, Plus, Trash2, Key } from 'lucide-react';
 
-const apiKeys = [
+const mockApiKeys = [
   {
     id: 1,
     name: 'Production API Key',
@@ -23,23 +23,23 @@ const apiKeys = [
 
 export default function Settings() {
   const { profile } = useAuth();
+  const [apiKeys, setApiKeys] = useState(mockApiKeys);
   const [showKeys, setShowKeys] = useState({});
   const [newKeyName, setNewKeyName] = useState('');
   const [showNewKeyForm, setShowNewKeyForm] = useState(false);
 
-  const toggleKeyVisibility = (keyId) => {
+  const toggleKeyVisibility = (keyId: number) => {
     setShowKeys(prev => ({
       ...prev,
       [keyId]: !prev[keyId]
     }));
   };
 
-  const copyToClipboard = (text) => {
+  const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    // You could add a toast notification here
   };
 
-  const maskKey = (key) => {
+  const maskKey = (key: string) => {
     return key.substring(0, 8) + '...' + key.substring(key.length - 4);
   };
 

@@ -8,7 +8,6 @@ export default function Profile() {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     full_name: profile?.full_name || '',
-    company: profile?.company || '',
     email: profile?.email || '',
   });
 

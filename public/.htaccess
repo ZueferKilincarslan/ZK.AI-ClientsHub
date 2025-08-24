@@ -2,11 +2,12 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
   
-  # Handle Angular and React Router
+  # Handle Angular and React Router - avoid infinite loops
   RewriteBase /
   RewriteRule ^index\.html$ - [L]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_URI} !^/index\.html$
   RewriteRule . /index.html [L]
 </IfModule>
 
