@@ -52,14 +52,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       try {
-        // Set a reasonable timeout for initialization
+        // Set a timeout for initialization to prevent infinite loading
         timeoutId = setTimeout(() => {
           if (mounted && !initialized) {
-            console.log('⏰ Auth initialization timeout, showing login');
+            console.log('⏰ Auth initialization timeout - proceeding to show login');
+            setError(null);
             setLoading(false);
             setInitialized(true);
           }
-        }, 3000); // Reduced to 3 seconds
+        }, 2000); // 2 seconds timeout
         
         console.log('🔍 Getting initial session...');
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -71,8 +72,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (sessionError) {
           console.error('❌ Error getting session:', sessionError);
-          console.log('No valid session found, showing login form');
+          console.log('Session error - showing login form');
           clearTimeout(timeoutId);
+          setError(null);
           setLoading(false);
           setInitialized(true);
           return;
@@ -87,6 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           await fetchProfile(session.user.id);
         } else {
           console.log('👤 No user, showing login');
+          setError(null);
           setLoading(false);
           setInitialized(true);
         }
@@ -94,8 +97,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (err) {
         if (!mounted) return;
         console.error('💥 Unexpected error during auth initialization:', err);
-        // Don't crash on initialization errors - just show login
-        console.log('Auth initialization failed, showing login form');
+        // Don't set error state for initialization failures - just show login
+        console.log('Auth initialization failed - showing login form');
+        setError(null);
         setLoading(false);
         setInitialized(true);
         clearTimeout(timeoutId);
@@ -104,32 +108,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     initializeAuth();
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase?.auth?.onAuthStateChange(async (event, session) => {
-      if (!mounted) return;
+    // Listen for auth changes only if supabase is available
+    let subscription: { unsubscribe: () => void } | null = null;
+    
+    if (supabase) {
+      const {
+        data: { subscription: authSubscription },
+      } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (!mounted) return;
+        
+        console.log('🔄 Auth state changed:', event, session ? 'Session exists' : 'No session');
+        
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          console.log('👤 User authenticated, fetching profile...');
+          await fetchProfile(session.user.id);
+        } else {
+          console.log('👤 User signed out');
+          setProfile(null);
+          setLoading(false);
+        }
+      });
       
-      console.log('🔄 Auth state changed:', event, session ? 'Session exists' : 'No session');
-      
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        console.log('👤 User authenticated, fetching profile...');
-        await fetchProfile(session.user.id);
-      } else {
-        console.log('👤 User signed out');
-        setProfile(null);
-        setLoading(false);
-      }
-    }) || { subscription: { unsubscribe: () => {} } };
+      subscription = authSubscription;
+    }
 
     return () => {
       console.log('🧹 Cleaning up auth context');
       mounted = false;
       clearTimeout(timeoutId);
-      subscription.unsubscribe();
+      subscription?.unsubscribe();
     };
   }, [initialized]);
 

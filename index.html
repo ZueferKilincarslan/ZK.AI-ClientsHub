@@ -16,10 +16,49 @@
     <meta name="twitter:title" content="ZK.AI Client Portal">
     <meta name="twitter:description" content="Manage your AI workflows, analytics, and automation with ZK.AI's powerful client portal.">
     <meta name="robots" content="index, follow">
+    <style>
+      /* Prevent flash of unstyled content */
+      #root {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #0f172a 0%, #581c87 50%, #0f172a 100%);
+      }
+      
+      /* Loading fallback styles */
+      .loading-fallback {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        color: white;
+        font-family: system-ui, -apple-system, sans-serif;
+      }
+      
+      .loading-spinner {
+        width: 48px;
+        height: 48px;
+        border: 3px solid rgba(168, 85, 247, 0.3);
+        border-top: 3px solid #a855f7;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
   </head>
   <body>
     <div id="root">
-      <!-- Loading fallback for when JavaScript is disabled or loading -->
+      <div class="loading-fallback">
+        <div>
+          <div class="loading-spinner"></div>
+          <div style="margin-top: 16px; text-align: center;">
+            <h1 style="font-size: 20px; font-weight: bold; margin: 0;">ZK.AI</h1>
+            <p style="font-size: 14px; margin: 8px 0 0 0; opacity: 0.8;">Loading your workspace...</p>
+          </div>
+        </div>
+      </div>
     </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
