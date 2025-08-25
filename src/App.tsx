@@ -77,14 +77,20 @@ function AppContent() {
     return <AuthForm />;
   }
 
-  // Show appropriate portal based on user role
+  // Show appropriate portal based on user role with proper routing
   console.log('🏠 User authenticated, showing portal for role:', profile?.role || 'client');
   
-  if (profile?.role === 'admin') {
-    return <AdminPortal />;
-  } else {
-    return <ClientPortal />;
-  }
+  return (
+    <Router>
+      <Routes>
+        {profile?.role === 'admin' ? (
+          <Route path="/*" element={<AdminPortal />} />
+        ) : (
+          <Route path="/*" element={<ClientPortal />} />
+        )}
+      </Routes>
+    </Router>
+  );
 }
 
 export default function App() {
@@ -104,9 +110,7 @@ export default function App() {
 
   return (
     <AuthProvider>
-      <Router>
-        <AppContent />
-      </Router>
+      <AppContent />
     </AuthProvider>
   );
 }

@@ -9,17 +9,11 @@ import Workflows from '../pages/Workflows';
 import WorkflowDetail from '../pages/WorkflowDetail';
 import Settings from '../pages/Settings';
 import Profile from '../pages/Profile';
-import AdminPortal from './AdminPortal';
 import ChangePassword from '../pages/ChangePassword';
 
 export default function ClientPortal() {
   const { profile, user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  // Show admin portal if user is admin
-  if (profile?.role === 'admin') {
-    return <AdminPortal />;
-  }
 
   // Check if user needs to change password
   const requiresPasswordChange = user?.user_metadata?.requires_password_change === true;
