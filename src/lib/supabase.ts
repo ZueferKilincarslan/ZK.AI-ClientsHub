@@ -1,14 +1,19 @@
 import { createClient } from '@supabase/supabase-js';
+import { appConfig } from '../config/environment';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+// Get Supabase credentials from centralized config
+const supabaseUrl = appConfig.supabaseUrl;
+const supabaseAnonKey = appConfig.supabaseAnonKey;
 
 // Debug logging for environment variables
 console.log('🔧 Supabase Config Check:', {
   hasUrl: !!supabaseUrl,
   hasKey: !!supabaseAnonKey,
   url: supabaseUrl ? `${supabaseUrl.substring(0, 30)}...` : 'missing',
-  keyLength: supabaseAnonKey ? supabaseAnonKey.length : 0
+  keyLength: supabaseAnonKey ? supabaseAnonKey.length : 0,
+  environment: import.meta.env.MODE || 'unknown',
+  isDevelopment: appConfig.isDevelopment,
+  isProduction: appConfig.isProduction
 });
 
 // Check if environment variables are available and valid
@@ -20,6 +25,16 @@ export const hasSupabaseConfig = !!(
 );
 
 console.log('✅ Supabase config valid:', hasSupabaseConfig);
+
+// Log more detailed info for debugging production issues
+if (!hasSupabaseConfig) {
+  console.error('❌ Supabase configuration missing:', {
+    url: supabaseUrl ? 'present' : 'missing',
+    key: supabaseAnonKey ? 'present' : 'missing',
+    urlValid: supabaseUrl ? supabaseUrl.startsWith('https://') : false,
+    keyValid: supabaseAnonKey ? supabaseAnonKey.length > 20 : false
+  });
+}
 
 // Create Supabase client only if config is available
 export const supabase = hasSupabaseConfig 

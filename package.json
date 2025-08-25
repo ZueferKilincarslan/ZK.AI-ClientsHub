@@ -6,10 +6,12 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "postbuild": "echo 'Build completed. Static files generated in dist/'",
+    "postbuild": "npm run copy-config-template",
+    "copy-config-template": "cp public/config-template.js dist/config-template.js && echo 'Build completed. Remember to configure dist/config.js with your Supabase credentials!'",
     "lint": "eslint .",
     "preview": "vite preview",
-    "serve": "npx serve dist"
+    "serve": "npx serve dist",
+    "deploy-setup": "echo 'After deployment, copy config-template.js to config.js and update with your Supabase credentials'"
   },
   "dependencies": {
     "@supabase/auth-ui-react": "^0.4.7",
