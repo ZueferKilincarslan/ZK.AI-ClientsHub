@@ -31,8 +31,12 @@ export default defineConfig({
           icons: ['lucide-react']
         }
       },
+      // Ensure config.js is copied to the build output
+      external: [],
     },
   },
+  // Ensure public files are copied correctly
+  publicDir: 'public',
   server: {
     port: 5173,
     host: true
