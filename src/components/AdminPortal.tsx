@@ -25,7 +25,7 @@ export default function AdminPortal() {
               <Route path="/clients/:id" element={<ClientDetail />} />
               <Route path="/workflows" element={<AdminWorkflows />} />
               <Route path="/settings" element={<AdminSettings />} />
-              <Route path="*" element={<Navigate to="/clients" replace />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </div>
         </main>
