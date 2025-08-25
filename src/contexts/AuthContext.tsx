@@ -31,6 +31,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [initialized, setInitialized] = useState(false);
 
+  // Force clear all auth state
+  const clearAuthState = () => {
+    setUser(null);
+    setProfile(null);
+    setSession(null);
+    setError(null);
+    setLoading(false);
+  };
+
   useEffect(() => {
     let mounted = true;
     let timeoutId: ReturnType<typeof setTimeout>;
@@ -45,6 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('❌ Supabase not configured');
         if (mounted) {
           setError('Supabase is not configured. Please connect to Supabase using the button in the top right.');
+          clearAuthState();
           setLoading(false);
           setInitialized(true);
         }
@@ -56,6 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         timeoutId = setTimeout(() => {
           if (mounted && !initialized) {
             console.log('⏰ Auth initialization timeout - proceeding to show login');
+            clearAuthState();
             setError(null);
             setLoading(false);
             setInitialized(true);
@@ -74,6 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.error('❌ Error getting session:', sessionError);
           console.log('Session error - showing login form');
           clearTimeout(timeoutId);
+          clearAuthState();
           setError(null);
           setLoading(false);
           setInitialized(true);
@@ -89,6 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           await fetchProfile(session.user.id);
         } else {
           console.log('👤 No user, showing login');
+          clearAuthState();
           setError(null);
           setLoading(false);
           setInitialized(true);
@@ -99,6 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error('💥 Unexpected error during auth initialization:', err);
         // Don't set error state for initialization failures - just show login
         console.log('Auth initialization failed - showing login form');
+        clearAuthState();
         setError(null);
         setLoading(false);
         setInitialized(true);
@@ -119,6 +133,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         console.log('🔄 Auth state changed:', event, session ? 'Session exists' : 'No session');
         
+        if (event === 'SIGNED_OUT') {
+          console.log('👋 User signed out - clearing all state');
+          clearAuthState();
+          setLoading(false);
+          return;
+        }
+        
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -127,7 +148,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           await fetchProfile(session.user.id);
         } else {
           console.log('👤 User signed out');
-          setProfile(null);
+          clearAuthState();
           setLoading(false);
         }
       });
@@ -183,9 +204,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!supabase) return;
     
     console.log('👋 Signing out...');
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error('❌ Error signing out:', error);
+    
+    try {
+      // Clear local state immediately
+      clearAuthState();
+      setLoading(true);
+      
+      // Sign out from Supabase
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('❌ Error signing out:', error);
+      }
+    } catch (error) {
+      console.error('💥 Unexpected error during sign out:', error);
+    } finally {
+      // Ensure we're in a clean state
+      clearAuthState();
+      setLoading(false);
+      
+      // Clear any additional local storage items
+      localStorage.removeItem('supabase.auth.token');
+      sessionStorage.clear();
+      
+      console.log('✅ Sign out complete');
+      
+      // Force page reload to ensure clean state
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
     }
   };
 

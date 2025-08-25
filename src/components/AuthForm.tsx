@@ -7,6 +7,14 @@ import { Zap } from 'lucide-react';
 
 export default function AuthForm() {
 
+  // Clear any preview mode artifacts on auth form load
+  React.useEffect(() => {
+    console.log('🔐 AuthForm mounted - clearing any preview artifacts');
+    sessionStorage.removeItem('preview-mode-bypass');
+    sessionStorage.removeItem('demo-user');
+    localStorage.removeItem('preview-session');
+  }, []);
+
   // Show error if Supabase is not configured
   if (!hasSupabaseConfig || !supabase) {
     return (

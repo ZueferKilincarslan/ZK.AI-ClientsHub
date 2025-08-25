@@ -40,18 +40,13 @@ export const testSupabaseConnection = async () => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 1500);
     
-    // Use a simple query instead of auth session for connection test
-    const { error } = await supabase.from('profiles').select('count').limit(1);
+    // Test auth connection instead of database query to avoid permission issues
+    const { data, error } = await supabase.auth.getSession();
     clearTimeout(timeoutId);
     
     if (error) {
-      // Don't treat auth errors as connection failures
-      if (error.code === 'PGRST301' || error.message.includes('JWT')) {
-        console.log('✅ Connection test successful (auth required)');
-        return { success: true, error: null };
-      }
       console.log('❌ Connection test failed:', error.message);
-      return { success: false, error: 'Database connection failed' };
+      return { success: false, error: 'Auth connection failed' };
     }
     
     console.log('✅ Connection test successful');
