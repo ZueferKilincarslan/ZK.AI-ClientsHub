@@ -3,10 +3,10 @@
 
 window.__APP_CONFIG__ = {
   // REQUIRED: Replace with your actual Supabase project URL
-  SUPABASE_URL: 'https://your-project-id.supabase.co',
+  SUPABASE_URL: 'https://jxauoyjzecefnezpdrel.supabase.co',
   
   // REQUIRED: Replace with your actual Supabase anon/public key
-  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.your-actual-key-here',
+  SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4YXVveWp6ZWNlZm5lenBkcmVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUyMDEwMzQsImV4cCI6MjA3MDc3NzAzNH0.Z_BouHULSEleUeUKj3JS_orogFk5mc0xdZAjbgAJhGw',
   
   // Optional: App configuration
   APP_NAME: 'ZK.AI Client Portal',
