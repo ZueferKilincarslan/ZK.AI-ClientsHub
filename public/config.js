@@ -4,8 +4,8 @@
 
 window.__APP_CONFIG__ = {
   // These will be undefined in development, which is fine since we use VITE_ env vars
-  SUPABASE_URL: undefined,
-  SUPABASE_ANON_KEY: undefined,
+  SUPABASE_URL: "https://jxauoyjzecefnezpdrel.supabase.co",
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4YXVveWp6ZWNlZm5lenBkcmVsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUyMDEwMzQsImV4cCI6MjA3MDc3NzAzNH0.Z_BouHULSEleUeUKj3JS_orogFk5mc0xdZAjbgAJhGw",
   
   // App configuration
   APP_NAME: 'ZK.AI Client Portal',
