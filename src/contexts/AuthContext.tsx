@@ -211,9 +211,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(true);
       
       // Sign out from Supabase
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error('❌ Error signing out:', error);
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('❌ Error signing out:', error);
+      }
+    } catch (error) {
+      console.error('💥 Unexpected error during sign out:', error);
+    } finally {
+      // Ensure we're in a clean state
+      clearAuthState();
+      setLoading(false);
+      
+      // Clear any additional local storage items
+      localStorage.removeItem('supabase.auth.token');
+      sessionStorage.clear();
+      
+      console.log('✅ Sign out complete');
+      
+      // Force page reload to ensure clean state
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 100);
     }
   };
 
@@ -230,26 +248,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         throw error;
-        // Even if there's an error, we've cleared local state
       }
-      
-      // Clear any additional local storage items
-      localStorage.removeItem('supabase.auth.token');
-      sessionStorage.clear();
-      
-      console.log('✅ Sign out complete');
-    } catch (error) {
-      console.error('💥 Unexpected error during sign out:', error);
-    } finally {
-      // Ensure we're in a clean state
-      clearAuthState();
-      setLoading(false);
-      
-      // Force page reload to ensure clean state
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 100);
-    }
 
       setProfile(data);
     } catch (error) {
