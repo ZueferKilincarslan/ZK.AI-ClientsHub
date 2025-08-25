@@ -15,6 +15,10 @@ function AppContent() {
     userRole: profile?.role 
   });
 
+  // Always enforce authentication flow - no bypassing in any mode
+  const isAuthenticated = !!user;
+  const isInitializing = loading && !error;
+
   // Show error state only for critical errors (not configuration issues)
   if (error) {
     console.log('❌ Showing error state:', error);
@@ -52,7 +56,7 @@ function AppContent() {
   }
 
   // Show loading state with timeout protection
-  if (loading) {
+  if (isInitializing) {
     console.log('⏳ Showing loading state');
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
@@ -68,7 +72,7 @@ function AppContent() {
   }
 
   // Show login form if no user is authenticated
-  if (!user) {
+  if (!isAuthenticated) {
     console.log('🔐 Showing login form - no user authenticated');
     return <AuthForm />;
   }
@@ -84,6 +88,20 @@ function AppContent() {
 }
 
 export default function App() {
+  // Ensure clean state on app mount
+  React.useEffect(() => {
+    console.log('🚀 App mounted - ensuring clean authentication state');
+    
+    // Clear any stale data that might cause preview mode issues
+    const clearStaleData = () => {
+      // Don't clear legitimate auth tokens, just stale UI state
+      sessionStorage.removeItem('preview-mode-bypass');
+      sessionStorage.removeItem('demo-user');
+    };
+    
+    clearStaleData();
+  }, []);
+
   return (
     <AuthProvider>
       <Router>
