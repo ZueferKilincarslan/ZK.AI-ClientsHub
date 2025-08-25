@@ -103,7 +103,7 @@ export default function ClientDetail() {
       const webhookPayload = {
         client: {
           id: client?.id,
-          name: client?.full_name || client?.email,
+          name: client?.full_name || 'Unnamed Client',
           email: client?.email,
         },
         workflow: {
@@ -117,7 +117,7 @@ export default function ClientDetail() {
       // Call webhook
       const webhookUrl = localStorage.getItem('webhook_url') || 
                         import.meta.env.VITE_WORKFLOW_WEBHOOK_URL || 
-                        'https://your-n8n-webhook.com/workflow-upload';
+                        'https://your-webhook-url.com/workflow-upload';
       
       const response = await fetch(webhookUrl, {
         method: 'POST',
@@ -128,7 +128,7 @@ export default function ClientDetail() {
       });
 
       if (!response.ok) {
-        throw new Error('Webhook call failed');
+        throw new Error(`Webhook call failed: ${response.status} ${response.statusText}`);
       }
 
       alert('Workflow uploaded successfully!');
