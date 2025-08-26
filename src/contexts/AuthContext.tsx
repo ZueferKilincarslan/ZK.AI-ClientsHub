@@ -31,13 +31,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [initialized, setInitialized] = useState(false);
 
-  // Force clear all auth state
+  // Force clear all auth state and local storage
   const clearAuthState = () => {
     setUser(null);
     setProfile(null);
     setSession(null);
     setError(null);
     setLoading(false);
+    
+    // Clear any cached data
+    localStorage.removeItem('supabase.auth.token');
+    sessionStorage.clear();
   };
 
   useEffect(() => {
@@ -140,11 +144,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
         
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          console.log('🔄 User signed in or token refreshed - fetching fresh profile');
+        }
+        
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          console.log('👤 User authenticated, fetching profile...');
+          console.log('👤 User authenticated, fetching fresh profile...');
           await fetchProfile(session.user.id);
         } else {
           console.log('👤 User signed out');
@@ -171,24 +179,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     
     try {
-      console.log('🔍 Fetching profile for user:', userId);
+      console.log('🔍 Fetching fresh profile for user:', userId);
       
+      // Always fetch fresh from database, no caching
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .single()
+        .throwOnError();
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('❌ Error fetching profile:', error);
-        // Don't set error state for profile fetch failures - user can still use the app
         setProfile(null);
-      } else if (data) {
-        console.log('✅ Profile fetched successfully:', data.role);
-        setProfile(data);
       } else {
-        console.log('ℹ️ No profile found, user can continue without profile');
-        setProfile(null);
+        console.log('✅ Fresh profile fetched successfully. Role:', data.role);
+        setProfile(data);
       }
     } catch (error) {
       console.error('💥 Error fetching profile:', error);
@@ -206,7 +212,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log('👋 Signing out...');
     
     try {
-      // Clear local state immediately
+      // Clear local state and storage immediately
       clearAuthState();
       setLoading(true);
       
@@ -221,10 +227,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Ensure we're in a clean state
       clearAuthState();
       setLoading(false);
-      
-      // Clear any additional local storage items
-      localStorage.removeItem('supabase.auth.token');
-      sessionStorage.clear();
       
       console.log('✅ Sign out complete');
       

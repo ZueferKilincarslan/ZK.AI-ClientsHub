@@ -12,7 +12,8 @@ function AppContent() {
     hasUser: !!user, 
     loading, 
     hasError: !!error, 
-    userRole: profile?.role 
+    userRole: profile?.role,
+    profileId: profile?.id
   });
 
   // Always enforce authentication flow - no bypassing in any mode
@@ -45,7 +46,7 @@ function AppContent() {
               <p>If this persists, check:</p>
               <ul className="mt-1 space-y-1">
                 <li>• Internet connection</li>
-                <li>• Supabase configuration</li>
+                <li>• Environment variables (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY)</li>
                 <li>• Browser console for errors</li>
               </ul>
             </div>
@@ -77,13 +78,50 @@ function AppContent() {
     return <AuthForm />;
   }
 
-  // Show appropriate portal based on user role with proper routing
-  console.log('🏠 User authenticated, showing portal for role:', profile?.role || 'client');
+  // Show appropriate portal based on fresh user role with proper routing
+  console.log('🏠 User authenticated, showing portal for role:', profile?.role || 'client', 'Profile ID:', profile?.id);
   
   return (
     <Router>
       <Routes>
         {profile?.role === 'admin' ? (
+          <>
+            {console.log('🔧 Routing to Admin Portal')}
+            <Route path="/*" element={<AdminPortal />} />
+          </>
+        ) : (
+          <>
+            {console.log('🔧 Routing to Client Portal')}
+            <Route path="/*" element={<ClientPortal />} />
+          </>
+        )}
+      </Routes>
+    </Router>
+  );
+}
+
+export default function App() {
+  // Ensure clean state on app mount
+  React.useEffect(() => {
+    console.log('🚀 App mounted - ensuring clean authentication state');
+    
+    // Clear any stale data that might cause issues
+    const clearStaleData = () => {
+      sessionStorage.removeItem('preview-mode-bypass');
+      sessionStorage.removeItem('demo-user');
+      localStorage.removeItem('preview-session');
+    };
+    
+    clearStaleData();
+  }, []);
+
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}
+
           <Route path="/*" element={<AdminPortal />} />
         ) : (
           <Route path="/*" element={<ClientPortal />} />
