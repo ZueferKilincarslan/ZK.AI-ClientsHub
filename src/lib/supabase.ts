@@ -1,9 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
-import { appConfig } from '../config/environment';
 
-// Get Supabase credentials from centralized config
-const supabaseUrl = appConfig.supabaseUrl;
-const supabaseAnonKey = appConfig.supabaseAnonKey;
+// Get Supabase credentials from environment variables
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Debug logging for environment variables
 console.log('🔧 Supabase Config Check:', {
@@ -11,9 +10,7 @@ console.log('🔧 Supabase Config Check:', {
   hasKey: !!supabaseAnonKey,
   url: supabaseUrl ? `${supabaseUrl.substring(0, 30)}...` : 'missing',
   keyLength: supabaseAnonKey ? supabaseAnonKey.length : 0,
-  environment: import.meta.env.MODE || 'unknown',
-  isDevelopment: appConfig.isDevelopment,
-  isProduction: appConfig.isProduction
+  environment: import.meta.env.MODE || 'unknown'
 });
 
 // Check if environment variables are available and valid

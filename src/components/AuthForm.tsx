@@ -30,14 +30,14 @@ export default function AuthForm() {
               Configuration Required
             </h1>
             <p className="mt-2 text-sm text-purple-300">
-              Please connect to Supabase to enable authentication
+              Please configure environment variables to enable authentication
             </p>
           </div>
           
           <div className="bg-slate-800/50 backdrop-blur-xl py-8 px-6 shadow-2xl rounded-2xl border border-purple-500/20">
             <div className="text-center">
               <p className="text-purple-300 mb-4">
-                Click the "Connect to Supabase" button in the top right corner to set up authentication.
+                Set the required environment variables to enable authentication.
               </p>
               <div className="text-xs text-purple-400 mb-4">
                 <p>Environment variables needed:</p>
@@ -45,6 +45,10 @@ export default function AuthForm() {
                   <li>• VITE_SUPABASE_URL</li>
                   <li>• VITE_SUPABASE_ANON_KEY</li>
                 </ul>
+                <p className="mt-2 text-purple-500">
+                  Development: Add to .env.local file<br/>
+                  Production: Set in Cloudflare Pages environment variables
+                </p>
               </div>
               <button 
                 onClick={() => window.location.reload()}
