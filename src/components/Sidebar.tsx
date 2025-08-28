@@ -31,11 +31,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const handleSignOut = async () => {
     try {
       console.log('🔄 Initiating sign out from sidebar...');
+      // Close sidebar first
+      onClose();
       await signOut();
     } catch (error) {
       console.error('Error signing out:', error);
-      // Force reload even if there's an error to ensure clean state
-      window.location.href = '/';
     }
   };
 
