@@ -35,7 +35,14 @@ if (!hasSupabaseConfig) {
 
 // Create Supabase client only if config is available
 export const supabase = hasSupabaseConfig 
-  ? createClient(supabaseUrl, supabaseAnonKey)
+  ? createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true,
+        flowType: 'pkce'
+      }
+    })
   : null;
 
 // Test Supabase connection with timeout and error handling

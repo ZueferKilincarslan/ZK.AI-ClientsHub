@@ -28,11 +28,11 @@ export default function AdminSidebar({ isOpen, onClose }: AdminSidebarProps) {
   const handleSignOut = async () => {
     try {
       console.log('🔄 Initiating sign out from admin sidebar...');
+      // Close sidebar first
+      onClose();
       await signOut();
     } catch (error) {
       console.error('Error signing out:', error);
-      // Force reload even if there's an error to ensure clean state
-      window.location.href = '/';
     }
   };
 
