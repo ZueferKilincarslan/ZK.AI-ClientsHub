@@ -23,7 +23,7 @@ const mockApiKeys = [
 
 export default function Settings() {
   const { profile } = useAuth();
-  const [apiKeys, setApiKeys] = useState(mockApiKeys);
+  const [apiKeys] = useState(mockApiKeys); // Removed setApiKeys
   const [showKeys, setShowKeys] = useState<Record<number, boolean>>({}); // Explicit type for showKeys
   const [newKeyName, setNewKeyName] = useState('');
   const [showNewKeyForm, setShowNewKeyForm] = useState(false);

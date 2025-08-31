@@ -1,4 +1,3 @@
-import React from 'react';
 import { Workflow } from '../../../lib/supabase';
 import { CheckCircle, AlertCircle, Pause } from 'lucide-react';
 

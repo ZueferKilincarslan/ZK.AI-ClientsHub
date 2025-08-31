@@ -1,4 +1,3 @@
-import React from 'react';
 import { User, Activity, BarChart3 } from 'lucide-react';
 
 interface ClientDetailTabsProps {

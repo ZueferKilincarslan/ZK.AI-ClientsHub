@@ -1,4 +1,3 @@
-import React from 'react';
 import { Activity, CheckCircle, TrendingUp, BarChart3 } from 'lucide-react';
 import { Workflow, Analytics } from '../../../lib/supabase';
 

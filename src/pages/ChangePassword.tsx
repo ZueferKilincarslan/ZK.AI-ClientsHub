@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import { Lock, Eye, EyeOff, Zap } from 'lucide-react';
 
 export default function ChangePassword() {
-  const { user } = useAuth(); // Removed updateProfile from destructuring
+  const { } = useAuth(); // Removed user from destructuring
   const [formData, setFormData] = useState({
     currentPassword: '',
     newPassword: '',

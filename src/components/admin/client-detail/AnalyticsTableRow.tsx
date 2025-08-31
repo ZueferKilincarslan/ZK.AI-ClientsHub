@@ -1,4 +1,3 @@
-import React from 'react';
 import { Analytics } from '../../../lib/supabase';
 
 interface AnalyticsTableRowProps {

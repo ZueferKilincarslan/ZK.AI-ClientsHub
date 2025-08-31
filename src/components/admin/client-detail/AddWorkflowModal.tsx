@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Plus } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
 import { Profile } from '../../../lib/supabase';
 

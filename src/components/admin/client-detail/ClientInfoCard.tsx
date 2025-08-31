@@ -1,4 +1,3 @@
-import React from 'react';
 import { Mail, Calendar } from 'lucide-react';
 import { Profile } from '../../../lib/supabase';
 
