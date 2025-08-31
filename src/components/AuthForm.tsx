@@ -1,22 +1,63 @@
 import React from 'react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
-import { supabase, hasSupabaseConfig } from '../lib/supabase';
+import { supabase, hasSupabaseConfig, testSupabaseConnection } from '../lib/supabase';
 import { Zap } from 'lucide-react';
 
 export default function AuthForm() {
 
-  // Clear any preview mode artifacts on auth form load
-  React.useEffect(() => {
-    console.log('🔐 AuthForm mounted - clearing any preview artifacts');
-    sessionStorage.removeItem('preview-mode-bypass');
-    sessionStorage.removeItem('demo-user');
-    localStorage.removeItem('preview-session');
+  const [connectionStatus, setConnectionStatus] = useState<'checking' | 'connected' | 'failed'>('checking');
+  const [configErrors, setConfigErrors] = useState<string[]>([]);
+
+  // Test connection when component mounts
+  useEffect(() => {
+    const checkConnection = async () => {
+      console.log('🔐 AuthForm: Testing Supabase connection...');
+      
+      if (!hasSupabaseConfig) {
+        console.log('❌ AuthForm: No Supabase config');
+        setConnectionStatus('failed');
+        setConfigErrors(['Supabase configuration missing']);
+        return;
+      }
+      
+      if (!supabase) {
+        console.log('❌ AuthForm: No Supabase client');
+        setConnectionStatus('failed');
+        setConfigErrors(['Failed to create Supabase client']);
+        return;
+      }
+      
+      try {
+        // Quick connection test
+        const testResult = await Promise.race([
+          testSupabaseConnection(),
+          new Promise<{ success: boolean; error: string }>((_, reject) => 
+            setTimeout(() => reject({ success: false, error: 'Connection timeout' }), 3000)
+          )
+        ]);
+        
+        if (testResult.success) {
+          console.log('✅ AuthForm: Connection successful');
+          setConnectionStatus('connected');
+        } else {
+          console.warn('⚠️ AuthForm: Connection failed, but allowing auth attempt:', testResult.error);
+          // Still allow auth form to show - connection issues might be temporary
+          setConnectionStatus('connected');
+        }
+      } catch (error) {
+        console.warn('⚠️ AuthForm: Connection test error, but allowing auth attempt:', error);
+        // Still show auth form - better to try than block completely
+        setConnectionStatus('connected');
+      }
+    };
+    
+    checkConnection();
   }, []);
 
-  // Show error if Supabase is not configured
-  if (!hasSupabaseConfig || !supabase) {
+  // Show configuration error only if we're sure config is missing
+  if (connectionStatus === 'failed' && configErrors.length > 0) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
@@ -37,13 +78,14 @@ export default function AuthForm() {
           <div className="bg-slate-800/50 backdrop-blur-xl py-8 px-6 shadow-2xl rounded-2xl border border-purple-500/20">
             <div className="text-center">
               <p className="text-purple-300 mb-4">
-                Set the required environment variables to enable authentication.
+                Please configure the required environment variables.
               </p>
               <div className="text-xs text-purple-400 mb-4">
-                <p>Environment variables needed:</p>
-                <ul className="mt-2 space-y-1 text-left">
-                  <li>• VITE_SUPABASE_URL</li>
-                  <li>• VITE_SUPABASE_ANON_KEY</li>
+                <p className="mb-2">Missing configuration:</p>
+                <ul className="mt-2 space-y-1 text-left text-red-300">
+                  {configErrors.map((error, index) => (
+                    <li key={index}>• {error}</li>
+                  ))}
                 </ul>
                 <p className="mt-2 text-purple-500">
                   Development: Add to .env.local file<br/>
@@ -63,6 +105,19 @@ export default function AuthForm() {
     );
   }
 
+  // Show loading while checking connection
+  if (connectionStatus === 'checking') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400 mx-auto"></div>
+          <p className="mt-4 text-purple-300">Connecting to authentication service...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show auth form once connection is verified or we decide to proceed anyway
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -114,6 +169,7 @@ export default function AuthForm() {
             providers={[]}
             redirectTo={window.location.origin}
             onlyThirdPartyProviders={false}
+            view="sign_in"
           />
         </div>
         

@@ -1,80 +1,117 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Get Supabase credentials from environment variables
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-// Debug logging for environment variables
-console.log('🔧 Supabase Config Check:', {
-  hasUrl: !!supabaseUrl,
-  hasKey: !!supabaseAnonKey,
-  url: supabaseUrl ? `${supabaseUrl.substring(0, 30)}...` : 'missing',
-  keyLength: supabaseAnonKey ? supabaseAnonKey.length : 0,
-  environment: import.meta.env.MODE || 'unknown'
-});
-
-// Check if environment variables are available and valid
-export const hasSupabaseConfig = !!(
-  supabaseUrl && 
-  supabaseAnonKey && 
-  supabaseUrl.startsWith('https://') &&
-  supabaseAnonKey.length > 20
-);
-
-console.log('✅ Supabase config valid:', hasSupabaseConfig);
-
-// Log more detailed info for debugging production issues
-if (!hasSupabaseConfig) {
-  console.error('❌ Supabase configuration missing:', {
-    url: supabaseUrl ? 'present' : 'missing',
-    key: supabaseAnonKey ? 'present' : 'missing',
-    urlValid: supabaseUrl ? supabaseUrl.startsWith('https://') : false,
-    keyValid: supabaseAnonKey ? supabaseAnonKey.length > 20 : false
-  });
+// Safe environment variable access with fallbacks
+function getEnvVar(key: string): string {
+  try {
+    return import.meta.env[key] || '';
+  } catch (error) {
+    console.warn(`Failed to access environment variable ${key}:`, error);
+    return '';
+  }
 }
 
-// Create Supabase client only if config is available
-export const supabase = hasSupabaseConfig 
-  ? createClient(supabaseUrl, supabaseAnonKey, {
+// Get Supabase credentials from environment variables with error handling
+const supabaseUrl = getEnvVar('VITE_SUPABASE_URL');
+const supabaseAnonKey = getEnvVar('VITE_SUPABASE_ANON_KEY');
+const environment = getEnvVar('MODE') || 'unknown';
+
+// Validate environment variables
+function validateSupabaseConfig(): { isValid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  
+  if (!supabaseUrl) {
+    errors.push('VITE_SUPABASE_URL is missing');
+  } else if (!supabaseUrl.startsWith('https://')) {
+    errors.push('VITE_SUPABASE_URL must start with https://');
+  }
+  
+  if (!supabaseAnonKey) {
+    errors.push('VITE_SUPABASE_ANON_KEY is missing');
+  } else if (supabaseAnonKey.length < 20) {
+    errors.push('VITE_SUPABASE_ANON_KEY appears to be invalid (too short)');
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+}
+
+const configValidation = validateSupabaseConfig();
+export const hasSupabaseConfig = configValidation.isValid;
+
+// Enhanced logging for debugging
+console.log('🔧 Supabase Configuration:', {
+  environment,
+  hasUrl: !!supabaseUrl,
+  hasKey: !!supabaseAnonKey,
+  urlPreview: supabaseUrl ? `${supabaseUrl.substring(0, 30)}...` : 'missing',
+  keyLength: supabaseAnonKey ? supabaseAnonKey.length : 0,
+  isValid: hasSupabaseConfig,
+  errors: configValidation.errors
+});
+
+// Create Supabase client with enhanced error handling
+export const supabase = (() => {
+  if (!hasSupabaseConfig) {
+    console.warn('❌ Supabase client not created due to invalid configuration');
+    return null;
+  }
+  
+  try {
+    const client = createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         autoRefreshToken: true,
         persistSession: true,
         detectSessionInUrl: true,
         flowType: 'pkce'
       }
-    })
-  : null;
+    });
+    
+    console.log('✅ Supabase client created successfully');
+    return client;
+  } catch (error) {
+    console.error('❌ Failed to create Supabase client:', error);
+    return null;
+  }
+})();
 
-// Test Supabase connection with timeout and error handling
-export const testSupabaseConnection = async () => {
+// Enhanced connection test with better error handling
+export const testSupabaseConnection = async (): Promise<{ success: boolean; error: string | null }> => {
   if (!supabase) {
-    console.log('❌ No supabase client available');
-    return { success: false, error: 'Supabase not configured' };
+    return { 
+      success: false, 
+      error: hasSupabaseConfig ? 'Failed to create Supabase client' : 'Supabase not configured' 
+    };
   }
   
   try {
-    console.log('🔍 Testing connection to Supabase...');
+    console.log('🔍 Testing Supabase connection...');
     
-    // Quick health check with shorter timeout for production
+    // Use a shorter timeout for production environments
+    const timeoutMs = environment === 'production' ? 3000 : 5000;
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 1500);
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     
-    // Test auth connection instead of database query to avoid permission issues
-    const { data, error } = await supabase.auth.getSession();
+    // Test with a simple auth check
+    const sessionPromise = supabase.auth.getSession();
+    const result = await Promise.race([
+      sessionPromise,
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Connection timeout')), timeoutMs)
+      )
+    ]);
+    
     clearTimeout(timeoutId);
     
-    if (error) {
-      console.log('❌ Connection test failed:', error.message);
-      return { success: false, error: 'Auth connection failed' };
-    }
-    
-    console.log('✅ Connection test successful');
+    console.log('✅ Supabase connection test successful');
     return { success: true, error: null };
-  } catch (err) {
-    const errorMessage = err instanceof Error ? 
-      (err.name === 'AbortError' ? 'Connection timeout' : err.message) : 
-      'Network error';
-    console.log('❌ Connection test error:', errorMessage);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? 
+      (error.name === 'AbortError' || error.message.includes('timeout') ? 'Connection timeout' : error.message) : 
+      'Unknown connection error';
+    
+    console.warn('⚠️ Supabase connection test failed:', errorMessage);
     return { success: false, error: errorMessage };
   }
 };

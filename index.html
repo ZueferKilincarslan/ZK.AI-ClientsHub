@@ -46,6 +46,11 @@
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
       }
+      
+      /* Hide loading fallback once React loads */
+      .react-loaded .loading-fallback {
+        display: none;
+      }
     </style>
   </head>
   <body>
@@ -61,5 +66,14 @@
       </div>
     </div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Fallback timeout to show error if React doesn't load
+      setTimeout(function() {
+        var root = document.getElementById('root');
+        if (root && !root.classList.contains('react-loaded')) {
+          root.innerHTML = '<div class="loading-fallback"><div style="text-align: center;"><h1 style="color: white; margin-bottom: 16px;">Loading Error</h1><p style="color: #c4b5fd;">Please refresh the page or check your connection.</p><button onclick="window.location.reload()" style="margin-top: 16px; padding: 8px 16px; background: #7c3aed; color: white; border: none; border-radius: 8px; cursor: pointer;">Refresh Page</button></div></div>';
+        }
+      }, 15000); // 15 second fallback
+    </script>
   </body>
 </html>
