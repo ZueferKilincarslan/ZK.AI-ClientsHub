@@ -5,6 +5,9 @@ import './index.css';
 
 const rootElement = document.getElementById('root')!;
 
+// Mark that React has loaded
+rootElement.classList.add('react-loaded');
+
 const root = createRoot(rootElement);
 
 root.render(

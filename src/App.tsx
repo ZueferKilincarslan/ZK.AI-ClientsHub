@@ -1,6 +1,8 @@
 import React from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import ErrorBoundary from './components/ErrorBoundary';
 import AuthForm from './components/AuthForm';
 import AdminPortal from './components/AdminPortal';
 import ClientPortal from './components/ClientPortal';
@@ -20,25 +22,32 @@ function LoadingScreen() {
 // Auth guard component
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, profile, loading, error } = useAuth();
-  const location = useLocation();
+  const [showFallback, setShowFallback] = useState(false);
+
+  // Fallback timer to prevent infinite loading
+  useEffect(() => {
+    const fallbackTimer = setTimeout(() => {
+      if (loading) {
+        console.warn('⏰ Auth loading timeout - showing fallback');
+        setShowFallback(true);
+      }
+    }, 10000); // 10 second fallback
+
+    return () => clearTimeout(fallbackTimer);
+  }, [loading]);
 
   // Show loading screen while initializing
-  if (loading) {
+  if (loading && !showFallback) {
     return <LoadingScreen />;
   }
 
-  // Show error state if Supabase is not configured
-  if (error) {
+  // Show auth form if there's an error, no config, or fallback triggered
+  if (error || showFallback || !user) {
     return <AuthForm />;
   }
 
-  // Show login form if no user
-  if (!user) {
-    return <AuthForm />;
-  }
-
-  // Wait for profile to load
-  if (!profile) {
+  // Wait for profile to load (but with timeout protection)
+  if (!profile && !showFallback) {
     return <LoadingScreen />;
   }
 
@@ -60,15 +69,17 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <AuthGuard>
-          <Routes>
-            <Route path="/*" element={<AppContent />} />
-          </Routes>
-        </AuthGuard>
-      </Router>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <Router>
+          <AuthGuard>
+            <Routes>
+              <Route path="/*" element={<AppContent />} />
+            </Routes>
+          </AuthGuard>
+        </Router>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

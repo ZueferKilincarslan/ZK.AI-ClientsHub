@@ -29,6 +29,21 @@ The application requires the following environment variables:
 **Development**: Add these to `.env.local` file in the project root
 **Production**: Set these as environment variables in your hosting platform (e.g., Cloudflare Pages)
 
+### Troubleshooting Deployment Issues
+
+If the app shows an infinite loading screen after deployment:
+
+1. **Check Environment Variables**: Ensure `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are properly set in your hosting platform
+2. **Verify Supabase URL**: The URL should start with `https://` and end with `.supabase.co`
+3. **Check Browser Console**: Look for error messages in the browser's developer console
+4. **Test Connection**: The app will automatically test the Supabase connection and show appropriate error messages
+
+Common issues:
+- Environment variables not set in production
+- Incorrect Supabase URL format
+- Network connectivity issues
+- Supabase project not accessible
+
 ### Building for Production
 
 ```bash
@@ -49,6 +64,11 @@ The build output will be in the `dist/` folder, ready for deployment.
    - `VITE_SUPABASE_ANON_KEY`
    - `VITE_APP_NAME` (optional)
    - `VITE_APP_VERSION` (optional)
+5. **Important**: Make sure environment variables are set correctly:
+   - Go to your Cloudflare Pages project dashboard
+   - Navigate to Settings > Environment variables
+   - Add the variables for "Production" environment
+   - Redeploy the project after adding variables
 
 ### Other Hosting Platforms
 
