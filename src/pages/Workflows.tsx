@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase, Workflow } from '../lib/supabase';
 import { Link } from 'react-router-dom';
@@ -8,10 +7,8 @@ import {
   Pause, 
   AlertCircle, 
   CheckCircle, 
-  Clock, 
   Plus,
   Search,
-  Filter,
   MoreVertical
 } from 'lucide-react';
 
@@ -50,6 +47,7 @@ export default function Workflows() {
   }, [user]);
 
   const fetchWorkflows = async () => {
+    if (!user || !supabase) return; // Add null check for supabase
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -68,6 +66,7 @@ export default function Workflows() {
   };
 
   const updateWorkflowStatus = async (workflowId: string, newStatus: 'active' | 'paused') => {
+    if (!supabase) return; // Add null check for supabase
     try {
       const { error } = await supabase
         .from('workflows')
@@ -93,7 +92,7 @@ export default function Workflows() {
     return matchesSearch && matchesStatus;
   });
 
-  const formatLastRun = (lastRun: string | null) => {
+  const formatLastRun = (lastRun: string | null | undefined) => {
     if (!lastRun) return 'Never';
     try {
       const date = new Date(lastRun);

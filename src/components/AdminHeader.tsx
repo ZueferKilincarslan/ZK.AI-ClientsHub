@@ -1,4 +1,3 @@
-import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Menu, Bell, Search, Crown } from 'lucide-react';
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase, Profile, Workflow, Analytics } from '../../lib/supabase';
@@ -14,7 +14,6 @@ import {
   TrendingUp,
   BarChart3,
   Plus,
-  Upload
 } from 'lucide-react';
 
 interface ClientData extends Profile {
@@ -42,6 +41,7 @@ export default function ClientDetail() {
   }, [user, id]);
 
   const fetchClientData = async () => {
+    if (!supabase) return; // Add null check for supabase
     try {
       setLoading(true);
       
@@ -466,9 +466,14 @@ export default function ClientDetail() {
                     <div key={workflow.id} className="border border-purple-500/20 rounded-lg p-4 bg-slate-700/30">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center space-x-3">
-                          <div className={`p-2 rounded-lg ${statusConfig[workflow.status].bg}`}>
-                            <StatusIcon className={`h-5 w-5 ${statusConfig[workflow.status].color}`} />
-                          </div>
+                          {(() => {
+                            const StatusIcon = statusConfig[workflow.status].icon;
+                            return (
+                              <div className={`p-2 rounded-lg ${statusConfig[workflow.status].bg}`}>
+                                <StatusIcon className={`h-5 w-5 ${statusConfig[workflow.status].color}`} />
+                              </div>
+                            );
+                          })()}
                           <div>
                             <h4 className="text-sm font-medium text-white">{workflow.name}</h4>
                             <p className="text-sm text-purple-300">{workflow.description}</p>

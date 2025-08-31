@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase, Analytics as AnalyticsType, Workflow } from '../lib/supabase';
-import { Calendar, Filter, Download, TrendingUp, Mail, Workflow as WorkflowIcon, Users, BarChart3 } from 'lucide-react';
+import { Filter, Download, TrendingUp, Mail, Workflow as WorkflowIcon, Users, BarChart3 } from 'lucide-react';
 
 const timeRanges = [
   { label: 'Last 7 days', value: '7d' },
@@ -26,14 +25,14 @@ export default function Analytics() {
   }, [user, selectedTimeRange]);
 
   const fetchAnalyticsData = async () => {
-    if (!user) return;
+    if (!user || !supabase) return; // Add null check for supabase
     
     try {
       setLoading(true);
       setError(null);
       
       // Fetch analytics data
-      const { data: analyticsData, error: analyticsError } = await supabase!
+      const { data: analyticsData, error: analyticsError } = await supabase
         .from('analytics')
         .select('*')
         .eq('user_id', user!.id)
@@ -43,7 +42,7 @@ export default function Analytics() {
       setAnalytics(analyticsData || []);
 
       // Fetch workflows for detailed metrics
-      const { data: workflowsData, error: workflowsError } = await supabase!
+      const { data: workflowsData, error: workflowsError } = await supabase
         .from('workflows')
         .select('*')
         .eq('user_id', user!.id);

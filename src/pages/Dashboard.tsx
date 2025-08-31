@@ -1,7 +1,5 @@
-import React from 'react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { useState } from 'react';
 import { supabase, Workflow, Analytics } from '../lib/supabase';
 import { 
   Activity, 
@@ -28,6 +26,7 @@ export default function Dashboard() {
   }, [user]);
 
   const fetchDashboardData = async () => {
+    if (!supabase) return; // Add null check for supabase
     try {
       setLoading(true);
       

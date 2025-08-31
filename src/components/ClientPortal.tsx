@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Header from './Header';
@@ -12,7 +12,7 @@ import Profile from '../pages/Profile';
 import ChangePassword from '../pages/ChangePassword';
 
 export default function ClientPortal() {
-  const { profile, user } = useAuth();
+  const { user } = useAuth(); // Removed profile from destructuring
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Check if user needs to change password

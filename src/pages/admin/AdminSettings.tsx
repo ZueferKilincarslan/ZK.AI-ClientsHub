@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { 
-  Settings, 
   Webhook, 
   Key, 
   Bell, 
@@ -11,7 +10,7 @@ import {
 } from 'lucide-react';
 
 export default function AdminSettings() {
-  const { profile } = useAuth();
+  const { } = useAuth(); // Removed profile from destructuring as it's not used
   const [webhookUrl, setWebhookUrl] = useState(''); // Initialize as empty string to allow user input
   const [apiKey, setApiKey] = useState('');
   const [testingWebhook, setTestingWebhook] = useState(false);
@@ -76,7 +75,7 @@ export default function AdminSettings() {
       });
 
       if (response.ok) {
-        const responseData = await response.text();
+        await response.text(); // responseData is not used, so just consume the body
         setWebhookTestResult({
           success: true,
           message: `Webhook test successful! Response: ${response.status} ${response.statusText}. The JSON payload sent was: ${JSON.stringify(testPayload, null, 2)}`

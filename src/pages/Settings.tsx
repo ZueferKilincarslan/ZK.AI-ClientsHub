@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Eye, EyeOff, Copy, Plus, Trash2, Key } from 'lucide-react';
 
@@ -24,7 +24,7 @@ const mockApiKeys = [
 export default function Settings() {
   const { profile } = useAuth();
   const [apiKeys, setApiKeys] = useState(mockApiKeys);
-  const [showKeys, setShowKeys] = useState({});
+  const [showKeys, setShowKeys] = useState<Record<number, boolean>>({}); // Explicit type for showKeys
   const [newKeyName, setNewKeyName] = useState('');
   const [showNewKeyForm, setShowNewKeyForm] = useState(false);
 
@@ -49,7 +49,7 @@ export default function Settings() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Manage your API keys and account settings for {profile?.company || 'your account'}.
+          Manage your API keys and account settings for {profile?.organization_id || 'your account'}.
         </p>
       </div>
 
@@ -144,12 +144,14 @@ export default function Settings() {
                         {showKeys[apiKey.id] ? apiKey.key : maskKey(apiKey.key)}
                       </code>
                       <button
+                        type="button" // Added type="button"
                         onClick={() => toggleKeyVisibility(apiKey.id)}
                         className="p-2 text-gray-400 hover:text-gray-600"
                       >
                         {showKeys[apiKey.id] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                       <button
+                        type="button" // Added type="button"
                         onClick={() => copyToClipboard(apiKey.key)}
                         className="p-2 text-gray-400 hover:text-gray-600"
                       >

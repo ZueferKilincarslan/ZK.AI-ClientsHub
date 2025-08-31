@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import { Lock, Eye, EyeOff, Zap } from 'lucide-react';
 
 export default function ChangePassword() {
-  const { user, updateProfile } = useAuth();
+  const { user } = useAuth(); // Removed updateProfile from destructuring
   const [formData, setFormData] = useState({
     currentPassword: '',
     newPassword: '',
@@ -29,6 +29,11 @@ export default function ChangePassword() {
 
     if (formData.newPassword.length < 6) {
       setError('Password must be at least 6 characters long');
+      return;
+    }
+
+    if (!supabase) { // Add null check for supabase
+      setError('Supabase is not configured.');
       return;
     }
 

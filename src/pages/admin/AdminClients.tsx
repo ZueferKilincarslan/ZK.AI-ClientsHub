@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase, Profile } from '../../lib/supabase';
 import { Users, Search, Plus, Edit, Trash2, Eye } from 'lucide-react';
@@ -41,7 +41,7 @@ export default function AdminClients() {
       // Fetch workflow counts for each client
       const clientsWithCounts = await Promise.all(
         (profiles || []).map(async (profile) => {
-          const { count, error: countError } = await supabase
+          const { count, error: countError } = await supabase! // Non-null assertion here
             .from('workflows')
             .select('*', { count: 'exact', head: true })
             .eq('user_id', profile.id);

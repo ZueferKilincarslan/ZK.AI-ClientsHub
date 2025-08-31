@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
   ArrowLeft, 
-  Play, 
   Pause, 
   Settings, 
   Download,
@@ -14,8 +13,35 @@ import {
   Webhook
 } from 'lucide-react';
 
-const workflowData = {
-  1: {
+interface LogStep {
+  name: string;
+  status: 'success' | 'failed' | 'skipped';
+  duration: string;
+  error?: string; // Make error optional
+}
+
+interface ExecutionLog {
+  id: number;
+  timestamp: string;
+  status: 'success' | 'failed';
+  duration: string;
+  error?: string; // Make error optional
+  steps: LogStep[];
+}
+
+interface WorkflowDetailData {
+  name: string;
+  status: 'active' | 'paused' | 'failed';
+  description: string;
+  created: string;
+  lastModified: string;
+  executions: number;
+  successRate: number;
+  avgDuration: string;
+}
+
+const workflowData: Record<string, WorkflowDetailData> = {
+  "1": { // Use string key for ID
     name: 'Welcome Email Sequence',
     status: 'active',
     description: 'Automated welcome series for new subscribers',
@@ -27,7 +53,7 @@ const workflowData = {
   }
 };
 
-const executionLogs = [
+const executionLogs: ExecutionLog[] = [
   {
     id: 1,
     timestamp: '2024-01-22 14:30:25',
@@ -71,10 +97,28 @@ const workflowSteps = [
 ];
 
 export default function WorkflowDetail() {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>(); // Specify type for id
   const [activeTab, setActiveTab] = useState('overview');
   
-  const workflow = workflowData[id] || workflowData[1];
+  const workflow = id ? workflowData[id] : workflowData["1"]; // Handle undefined id
+
+  if (!workflow) {
+    return (
+      <div className="text-center py-12">
+        <h3 className="text-lg font-medium text-gray-900">Workflow not found</h3>
+        <p className="mt-1 text-sm text-gray-500">
+          The requested workflow could not be found.
+        </p>
+        <Link
+          to="/workflows"
+          className="mt-4 inline-flex items-center text-indigo-600 hover:text-indigo-500"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Workflows
+        </Link>
+      </div>
+    );
+  }
 
   const tabs = [
     { id: 'overview', name: 'Overview' },

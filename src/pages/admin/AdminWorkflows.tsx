@@ -1,15 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase, Workflow, Profile } from '../../lib/supabase';
 import { 
   Upload, 
   Search, 
-  Filter,
   CheckCircle,
   AlertCircle,
   Pause,
-  Play,
-  User
 } from 'lucide-react';
 
 interface WorkflowWithClient extends Workflow {
@@ -35,7 +32,7 @@ export default function AdminWorkflows() {
       setLoading(true);
       
       // Fetch all workflows with client information
-      const { data: workflowsData, error: workflowsError } = await supabase
+      const { data: workflowsData, error: workflowsError } = await supabase! // Non-null assertion here
         .from('workflows')
         .select(`
           *,
@@ -53,7 +50,7 @@ export default function AdminWorkflows() {
 
       const workflowsWithClients = (workflowsData || []).map(workflow => ({
         ...workflow,
-        client: workflow.profiles
+        client: workflow.profiles as Profile // Cast to Profile type
       }));
 
       setWorkflows(workflowsWithClients);
@@ -136,7 +133,7 @@ export default function AdminWorkflows() {
     },
   };
 
-  const formatLastRun = (lastRun: string | null) => {
+  const formatLastRun = (lastRun: string | null | undefined) => {
     if (!lastRun) return 'Never';
     try {
       const date = new Date(lastRun);

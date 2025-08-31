@@ -53,7 +53,7 @@ export const testSupabaseConnection = async () => {
     const timeoutId = setTimeout(() => controller.abort(), 1500);
     
     // Test auth connection instead of database query to avoid permission issues
-    const { data, error } = await supabase.auth.getSession();
+    const { error } = await supabase.auth.getSession();
     clearTimeout(timeoutId);
     
     if (error) {

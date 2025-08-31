@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { User, Mail, Lock, Bell, Shield } from 'lucide-react';
+import { User, Bell, Shield } from 'lucide-react';
 
 export default function Profile() {
   const { profile, updateProfile } = useAuth();
@@ -115,7 +115,8 @@ export default function Profile() {
                     <p className="mt-1 text-sm text-gray-500">Email cannot be changed</p>
                   </div>
 
-                  <div>
+                  {/* Removed company field as it's not in Profile interface */}
+                  {/* <div>
                     <label className="block text-sm font-medium text-gray-700">Company</label>
                     <input
                       type="text"
@@ -123,7 +124,7 @@ export default function Profile() {
                       onChange={(e) => setFormData({ ...formData, company: e.target.value })}
                       className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                     />
-                  </div>
+                  </div> */}
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Time Zone</label>
