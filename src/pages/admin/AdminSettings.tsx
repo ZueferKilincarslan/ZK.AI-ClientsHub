@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { 
   Settings, 
@@ -13,9 +12,7 @@ import {
 
 export default function AdminSettings() {
   const { profile } = useAuth();
-  const [webhookUrl, setWebhookUrl] = useState(
-    import.meta.env.VITE_WORKFLOW_WEBHOOK_URL || 'https://your-n8n-instance.com/webhook/workflow-upload'
-  );
+  const [webhookUrl, setWebhookUrl] = useState(''); // Initialize as empty string to allow user input
   const [apiKey, setApiKey] = useState('');
   const [testingWebhook, setTestingWebhook] = useState(false);
   const [webhookTestResult, setWebhookTestResult] = useState<{
@@ -47,7 +44,7 @@ export default function AdminSettings() {
     if (!webhookUrl.trim()) {
       setWebhookTestResult({
         success: false,
-        message: 'Please enter a webhook URL first'
+        message: 'Please enter a webhook URL first.'
       });
       return;
     }
@@ -55,36 +52,45 @@ export default function AdminSettings() {
     setTestingWebhook(true);
     setWebhookTestResult(null);
 
+    const testPayload = {
+      test: true,
+      source: 'admin_panel',
+      timestamp: new Date().toISOString(),
+      message: 'Test webhook from ZK.AI Admin Panel',
+      client_id: 'test_client_123', // Dummy client ID for testing
+      workflow_id: 'test_workflow_456', // Dummy workflow ID for testing
+      test_data: {
+        event_type: 'webhook_test',
+        status: 'success',
+        details: 'This is a test payload to verify webhook connectivity.'
+      }
+    };
+
     try {
       const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          test: true,
-          source: 'admin_panel',
-          timestamp: new Date().toISOString(),
-          message: 'Test webhook from ZK.AI Admin Panel'
-        }),
+        body: JSON.stringify(testPayload),
       });
 
       if (response.ok) {
         const responseData = await response.text();
         setWebhookTestResult({
           success: true,
-          message: `Webhook test successful! Response: ${response.status} ${response.statusText}`
+          message: `Webhook test successful! Response: ${response.status} ${response.statusText}. The JSON payload sent was: ${JSON.stringify(testPayload, null, 2)}`
         });
       } else {
         setWebhookTestResult({
           success: false,
-          message: `Webhook test failed: ${response.status} ${response.statusText}`
+          message: `Webhook test failed: ${response.status} ${response.statusText}. Please check the URL and your n8n workflow.`
         });
       }
     } catch (error) {
       setWebhookTestResult({
         success: false,
-        message: `Webhook test failed: ${error instanceof Error ? error.message : 'Network error'}`
+        message: `Webhook test failed: ${error instanceof Error ? error.message : 'Network error'}. Ensure the URL is correct and accessible.`
       });
     } finally {
       setTestingWebhook(false);
@@ -97,7 +103,12 @@ export default function AdminSettings() {
     const savedApiKey = localStorage.getItem('api_key');
     const savedNotifications = localStorage.getItem('notifications');
 
-    if (savedWebhookUrl) setWebhookUrl(savedWebhookUrl);
+    if (savedWebhookUrl) {
+      setWebhookUrl(savedWebhookUrl);
+    } else if (import.meta.env.VITE_WORKFLOW_WEBHOOK_URL) {
+      setWebhookUrl(import.meta.env.VITE_WORKFLOW_WEBHOOK_URL);
+    }
+    
     if (savedApiKey) setApiKey(savedApiKey);
     if (savedNotifications) {
       try {
