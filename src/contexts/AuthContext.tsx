@@ -181,24 +181,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log('🔍 Fetching fresh profile for user:', userId);
       
+      // Add timeout to prevent hanging
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
       // Always fetch fresh from database, no caching
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single()
-        .throwOnError();
+        .single();
+      
+      clearTimeout(timeoutId);
 
       if (error) {
-        console.error('❌ Error fetching profile:', error);
-        setProfile(null);
+        console.error('❌ Error fetching profile:', error.message);
+        
+        // If profile doesn't exist, create one with default role
+        if (error.code === 'PGRST116') {
+          console.log('📝 Profile not found, creating default profile...');
+          await createDefaultProfile(userId);
+          return; // createDefaultProfile will call fetchProfile again
+        }
+        
+        throw error;
       } else {
-        console.log('✅ Fresh profile fetched successfully. Role:', data.role);
+        console.log('✅ Fresh profile fetched successfully:', {
+          id: data.id,
+          email: data.email,
+          role: data.role,
+          fullName: data.full_name
+        });
         setProfile(data);
       }
     } catch (error) {
-      console.error('💥 Error fetching profile:', error);
+      console.error('💥 Critical error fetching profile:', error);
       setProfile(null);
+      setError('Failed to load user profile. Please try refreshing the page.');
     } finally {
       console.log('✅ Auth initialization complete');
       setLoading(false);
@@ -206,6 +225,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const createDefaultProfile = async (userId: string) => {
+    if (!supabase) return;
+    
+    try {
+      console.log('📝 Creating default profile for user:', userId);
+      
+      // Get user email from auth
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) throw new Error('No authenticated user found');
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .insert({
+          id: userId,
+          email: authUser.email!,
+          role: 'client', // Default to client role
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('❌ Error creating default profile:', error);
+        throw error;
+      }
+      
+      console.log('✅ Default profile created successfully:', data);
+      setProfile(data);
+    } catch (error) {
+      console.error('💥 Error creating default profile:', error);
+      setError('Failed to create user profile. Please contact support.');
+    } finally {
+      setLoading(false);
+      setInitialized(true);
+    }
+  };
   const signOut = async () => {
     if (!supabase) return;
     

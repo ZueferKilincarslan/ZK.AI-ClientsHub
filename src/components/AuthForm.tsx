@@ -13,6 +13,14 @@ export default function AuthForm() {
     sessionStorage.removeItem('preview-mode-bypass');
     sessionStorage.removeItem('demo-user');
     localStorage.removeItem('preview-session');
+    
+    // Test Supabase connection when auth form loads
+    if (hasSupabaseConfig && supabase) {
+      console.log('🔍 Testing Supabase connection from AuthForm...');
+      testSupabaseConnection().then(result => {
+        console.log('🔗 Connection test result:', result);
+      });
+    }
   }, []);
 
   // Show error if Supabase is not configured

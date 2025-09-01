@@ -9,6 +9,35 @@ import ClientDetail from '../pages/admin/ClientDetail';
 
 export default function AdminPortal() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { profile, user } = useAuth();
+
+  // Debug logging for admin portal
+  React.useEffect(() => {
+    console.log('👑 AdminPortal mounted:', {
+      userId: user?.id,
+      userEmail: user?.email,
+      profileRole: profile?.role,
+      profileId: profile?.id
+    });
+  }, [user, profile]);
+
+  // Verify user has admin role
+  if (profile?.role !== 'admin') {
+    console.log('❌ User does not have admin role:', profile?.role);
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <div className="text-center">
+          <div className="text-red-400 mb-4">🚫</div>
+          <h3 className="text-lg font-medium text-white mb-2">Access Denied</h3>
+          <p className="text-red-300 mb-4">
+            You don't have permission to access the admin portal.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  console.log('✅ Rendering Admin Portal for user:', user?.email);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">

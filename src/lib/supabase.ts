@@ -50,15 +50,36 @@ export const testSupabaseConnection = async () => {
     
     // Quick health check with shorter timeout for production
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 1500);
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // Increased timeout
     
-    // Test auth connection instead of database query to avoid permission issues
-    const { data, error } = await supabase.auth.getSession();
+    // Test both auth and database connection
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     clearTimeout(timeoutId);
     
-    if (error) {
-      console.log('❌ Connection test failed:', error.message);
+    if (sessionError) {
+      console.log('❌ Auth connection test failed:', sessionError.message);
       return { success: false, error: 'Auth connection failed' };
+    }
+    
+    // If we have a session, test database access
+    if (session?.user) {
+      try {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('id, role')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (profileError && profileError.code !== 'PGRST116') {
+          console.log('❌ Database connection test failed:', profileError.message);
+          return { success: false, error: 'Database connection failed' };
+        }
+        
+        console.log('✅ Database connection test successful');
+      } catch (dbError) {
+        console.log('❌ Database test error:', dbError);
+        return { success: false, error: 'Database access failed' };
+      }
     }
     
     console.log('✅ Connection test successful');
