@@ -39,9 +39,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setError(null);
     setLoading(false);
     
-    // Clear any cached data
-    localStorage.removeItem('supabase.auth.token');
-    sessionStorage.clear();
+    // Clear any cached auth data more thoroughly
+    try {
+      localStorage.removeItem('supabase.auth.token');
+      localStorage.removeItem('sb-' + import.meta.env.VITE_SUPABASE_URL?.split('//')[1]?.split('.')[0] + '-auth-token');
+      sessionStorage.clear();
+    } catch (error) {
+      console.log('Error clearing storage:', error);
+    }
   };
 
   useEffect(() => {
@@ -87,12 +92,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         if (sessionError) {
           console.error('❌ Error getting session:', sessionError);
-          console.log('Session error - showing login form');
-          clearTimeout(timeoutId);
-          await signOut();
+          
+          // Handle specific refresh token errors
+          if (sessionError.message?.includes('refresh_token_not_found') || 
+              sessionError.message?.includes('Invalid Refresh Token')) {
+            console.log('🔄 Invalid refresh token detected - clearing auth state');
+            clearAuthState();
+            setError(null);
+            setLoading(false);
+            setInitialized(true);
+            clearTimeout(timeoutId);
+            return;
+          }
+          
+          // For other session errors, try to sign out cleanly
+          try {
+            await supabase.auth.signOut();
+          } catch (signOutError) {
+            console.log('Error during cleanup signout:', signOutError);
+          }
+          
+          clearAuthState();
           setError(null);
           setLoading(false);
           setInitialized(true);
+          clearTimeout(timeoutId);
           return;
         }
 
