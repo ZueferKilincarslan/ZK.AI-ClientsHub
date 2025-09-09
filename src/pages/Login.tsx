@@ -1,29 +1,57 @@
-import React from 'react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase, hasSupabaseConfig, testSupabaseConnection } from '../lib/supabase';
 import { Zap } from 'lucide-react';
 
-export default function AuthForm() {
-
+export default function Login() {
+  const [user, setUser] = useState(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<'checking' | 'connected' | 'failed'>('checking');
   const [configErrors, setConfigErrors] = useState<string[]>([]);
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkExistingSession = async () => {
+      if (!supabase) return;
+      
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          setUser(session.user);
+          
+          // Fetch user profile to get role
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', session.user.id)
+            .single();
+          
+          setUserRole(profile?.role || 'client');
+        }
+      } catch (error) {
+        console.error('Error checking existing session:', error);
+      }
+    };
+
+    checkExistingSession();
+  }, []);
 
   // Test connection when component mounts
   useEffect(() => {
     const checkConnection = async () => {
-      console.log('🔐 AuthForm: Testing Supabase connection...');
+      console.log('🔐 Login: Testing Supabase connection...');
       
       if (!hasSupabaseConfig) {
-        console.log('❌ AuthForm: No Supabase config');
+        console.log('❌ Login: No Supabase config');
         setConnectionStatus('failed');
         setConfigErrors(['Supabase configuration missing']);
         return;
       }
       
       if (!supabase) {
-        console.log('❌ AuthForm: No Supabase client');
+        console.log('❌ Login: No Supabase client');
         setConnectionStatus('failed');
         setConfigErrors(['Failed to create Supabase client']);
         return;
@@ -39,15 +67,15 @@ export default function AuthForm() {
         ]);
         
         if (testResult.success) {
-          console.log('✅ AuthForm: Connection successful');
+          console.log('✅ Login: Connection successful');
           setConnectionStatus('connected');
         } else {
-          console.warn('⚠️ AuthForm: Connection failed, but allowing auth attempt:', testResult.error);
+          console.warn('⚠️ Login: Connection failed, but allowing auth attempt:', testResult.error);
           // Still allow auth form to show - connection issues might be temporary
           setConnectionStatus('connected');
         }
       } catch (error) {
-        console.warn('⚠️ AuthForm: Connection test error, but allowing auth attempt:', error);
+        console.warn('⚠️ Login: Connection test error, but allowing auth attempt:', error);
         // Still show auth form - better to try than block completely
         setConnectionStatus('connected');
       }
@@ -55,6 +83,12 @@ export default function AuthForm() {
     
     checkConnection();
   }, []);
+
+  // Redirect if already logged in
+  if (user && userRole) {
+    const redirectPath = userRole === 'admin' ? '/clients' : '/';
+    return <Navigate to={redirectPath} replace />;
+  }
 
   // Show configuration error only if we're sure config is missing
   if (connectionStatus === 'failed' && configErrors.length > 0) {
@@ -131,7 +165,7 @@ export default function AuthForm() {
             Welcome to ZK.AI
           </h1>
           <p className="mt-2 text-sm text-purple-300">
-            Access your client portal and manage your AI workflows
+            Sign in to access your client portal and manage your AI workflows
           </p>
         </div>
         

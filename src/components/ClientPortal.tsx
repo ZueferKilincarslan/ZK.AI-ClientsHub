@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Header from './Header';
 import Sidebar from './Sidebar';
@@ -14,12 +14,18 @@ import ChangePassword from '../pages/ChangePassword';
 export default function ClientPortal() {
   const { profile, user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
 
   // Check if user needs to change password
   const requiresPasswordChange = user?.user_metadata?.requires_password_change === true;
   
   if (requiresPasswordChange) {
     return <ChangePassword />;
+  }
+
+  // Redirect to login if accessing login page while authenticated
+  if (location.pathname === '/login') {
+    return <Navigate to="/" replace />;
   }
 
   return (

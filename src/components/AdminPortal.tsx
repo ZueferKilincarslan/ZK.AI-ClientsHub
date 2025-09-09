@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import AdminHeader from './AdminHeader';
 import AdminSidebar from './AdminSidebar';
 import AdminClients from '../pages/admin/AdminClients';
@@ -9,6 +9,12 @@ import ClientDetail from '../pages/admin/ClientDetail';
 
 export default function AdminPortal() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
+
+  // Redirect to clients if accessing login page while authenticated as admin
+  if (location.pathname === '/login') {
+    return <Navigate to="/clients" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">

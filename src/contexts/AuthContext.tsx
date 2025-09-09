@@ -262,7 +262,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // Force navigation to root and reload
       setTimeout(() => {
-        window.location.href = '/';
+        window.location.href = '/login';
       }, 100);
     }
   };

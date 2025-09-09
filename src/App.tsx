@@ -1,60 +1,13 @@
 import React from 'react';
-import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
-import AuthForm from './components/AuthForm';
+import ProtectedRoute from './components/ProtectedRoute';
+import Login from './pages/Login';
 import AdminPortal from './components/AdminPortal';
 import ClientPortal from './components/ClientPortal';
 
-// Loading component
-function LoadingScreen() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400 mx-auto"></div>
-        <p className="mt-4 text-purple-300">Loading your workspace...</p>
-      </div>
-    </div>
-  );
-}
-
-// Auth guard component
-function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { user, profile, loading, error } = useAuth();
-  const [showFallback, setShowFallback] = useState(false);
-
-  // Fallback timer to prevent infinite loading
-  useEffect(() => {
-    const fallbackTimer = setTimeout(() => {
-      if (loading) {
-        console.warn('⏰ Auth loading timeout - showing fallback');
-        setShowFallback(true);
-      }
-    }, 10000); // 10 second fallback
-
-    return () => clearTimeout(fallbackTimer);
-  }, [loading]);
-
-  // Show loading screen while initializing
-  if (loading && !showFallback) {
-    return <LoadingScreen />;
-  }
-
-  // Show auth form if there's an error, no config, or fallback triggered
-  if (error || showFallback || !user) {
-    return <AuthForm />;
-  }
-
-  // Wait for profile to load (but with timeout protection)
-  if (!profile && !showFallback) {
-    return <LoadingScreen />;
-  }
-
-  return <>{children}</>;
-}
-
-function AppContent() {
+function ProtectedAppContent() {
   const { profile } = useAuth();
 
   // Route based on user role
@@ -72,11 +25,14 @@ function App() {
     <ErrorBoundary>
       <AuthProvider>
         <Router>
-          <AuthGuard>
-            <Routes>
-              <Route path="/*" element={<AppContent />} />
-            </Routes>
-          </AuthGuard>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/*" element={
+              <ProtectedRoute>
+                <ProtectedAppContent />
+              </ProtectedRoute>
+            } />
+          </Routes>
         </Router>
       </AuthProvider>
     </ErrorBoundary>
