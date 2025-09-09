@@ -1,41 +1,80 @@
 import React, { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase, hasSupabaseConfig, testSupabaseConnection } from '../lib/supabase';
 import { Zap } from 'lucide-react';
 
 export default function Login() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<'checking' | 'connected' | 'failed'>('checking');
   const [configErrors, setConfigErrors] = useState<string[]>([]);
 
-  // Check if user is already logged in
+  // Set up auth state listener
   useEffect(() => {
-    const checkExistingSession = async () => {
-      if (!supabase) return;
-      
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) {
-          setUser(session.user);
-          
-          // Fetch user profile to get role
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', session.user.id)
-            .single();
-          
-          setUserRole(profile?.role || 'client');
-        }
-      } catch (error) {
-        console.error('Error checking existing session:', error);
+    if (!supabase) return;
+
+    let mounted = true;
+
+    // Check existing session
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user && mounted) {
+        console.log('✅ Login: Existing session found');
+        
+        // Fetch user profile to get role
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+        
+        const role = profile?.role || 'client';
+        const redirectPath = role === 'admin' ? '/clients' : '/';
+        
+        console.log('🔄 Login: Redirecting to', redirectPath);
+        navigate(redirectPath, { replace: true });
       }
     };
 
-    checkExistingSession();
+    // Set up auth listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+      
+      console.log('🔄 Login: Auth state change:', event);
+      
+      if (event === 'SIGNED_IN' && session?.user) {
+        console.log('✅ Login: User signed in successfully');
+        
+        // Fetch user profile to get role
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+        
+        const role = profile?.role || 'client';
+        const redirectPath = role === 'admin' ? '/clients' : '/';
+        
+        console.log('🔄 Login: Redirecting to', redirectPath);
+        navigate(redirectPath, { replace: true });
+      }
+      
+      if (event === 'SIGNED_OUT') {
+        console.log('👋 Login: User signed out');
+        setUser(null);
+        setUserRole(null);
+      }
+    });
+
+    checkSession();
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   // Test connection when component mounts
@@ -85,10 +124,7 @@ export default function Login() {
   }, []);
 
   // Redirect if already logged in
-  if (user && userRole) {
-    const redirectPath = userRole === 'admin' ? '/clients' : '/';
-    return <Navigate to={redirectPath} replace />;
-  }
+  // Note: Redirect is now handled in useEffect to avoid race conditions
 
   // Show configuration error only if we're sure config is missing
   if (connectionStatus === 'failed' && configErrors.length > 0) {

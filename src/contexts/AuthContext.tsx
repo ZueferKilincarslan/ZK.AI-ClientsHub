@@ -71,6 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         console.log('✅ Profile fetched successfully. Role:', data.role);
+        localStorage.removeItem('sb-' + supabase?.supabaseUrl?.split('//')[1]?.split('.')[0] + '-auth-token');
         return data;
       } catch (error) {
         console.error(`❌ Error fetching profile (attempt ${attempt}):`, error);
