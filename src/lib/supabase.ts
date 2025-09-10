@@ -89,7 +89,7 @@ export const testSupabaseConnection = async (): Promise<{ success: boolean; erro
     console.log('🔍 Testing Supabase connection...');
     
     // Use a shorter timeout for production environments
-    const timeoutMs = environment === 'production' ? 3000 : 5000;
+    const timeoutMs = environment === 'production' ? 5000 : 8000;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     

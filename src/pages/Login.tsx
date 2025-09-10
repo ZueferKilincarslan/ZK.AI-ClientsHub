@@ -85,7 +85,7 @@ export default function Login() {
       if (!hasSupabaseConfig) {
         console.log('❌ Login: No Supabase config');
         setConnectionStatus('failed');
-        setConfigErrors(['Supabase configuration missing']);
+        setConfigErrors(['Supabase configuration missing. Please check environment variables.']);
         return;
       }
       
@@ -97,11 +97,11 @@ export default function Login() {
       }
       
       try {
-        // Quick connection test
+        // Connection test with longer timeout for separate tabs
         const testResult = await Promise.race([
           testSupabaseConnection(),
-          new Promise<{ success: boolean; error: string }>((_, reject) => 
-            setTimeout(() => reject({ success: false, error: 'Connection timeout' }), 3000)
+          new Promise<{ success: boolean; error: string }>((resolve) => 
+            setTimeout(() => resolve({ success: false, error: 'Connection timeout' }), 8000)
           )
         ]);
         

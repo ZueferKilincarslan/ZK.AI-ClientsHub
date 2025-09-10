@@ -121,11 +121,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         console.log('🔄 Testing Supabase connection...');
         
-        // Test connection first with timeout
+        // Test connection first with longer timeout for separate tabs
         const connectionTest = await Promise.race([
           testSupabaseConnection(),
-          new Promise<{ success: boolean; error: string }>((_, reject) => 
-            setTimeout(() => reject({ success: false, error: 'Connection test timeout' }), 5000)
+          new Promise<{ success: boolean; error: string }>((resolve) => 
+            setTimeout(() => resolve({ success: false, error: 'Connection test timeout' }), 10000)
           )
         ]);
         
@@ -139,11 +139,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         console.log('🔄 Getting initial session...');
         
-        // Get session with shorter timeout for production
+        // Get session with longer timeout for separate tabs
         const sessionResult = await Promise.race([
           supabase.auth.getSession(),
           new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Session timeout')), 3000)
+            setTimeout(() => reject(new Error('Session timeout')), 8000)
           )
         ]) as any;
         

@@ -17,7 +17,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
     const checkSession = async () => {
       if (!supabase) {
-        console.warn('Supabase not configured');
+        console.warn('⚠️ ProtectedRoute: Supabase not configured');
         if (mounted) {
           setLoading(false);
           setSessionChecked(true);
@@ -26,10 +26,16 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
       }
 
       try {
-        console.log('🔍 ProtectedRoute: Checking session...');
+        console.log('🔍 ProtectedRoute: Checking session with longer timeout...');
         
-        // Always fetch fresh session data
-        const { data: { session }, error } = await supabase.auth.getSession();
+        // Always fetch fresh session data with timeout
+        const sessionPromise = supabase.auth.getSession();
+        const { data: { session }, error } = await Promise.race([
+          sessionPromise,
+          new Promise<any>((_, reject) => 
+            setTimeout(() => reject(new Error('Session check timeout')), 10000)
+          )
+        ]);
         
         if (error) {
           console.error('Session check error:', error);
@@ -53,7 +59,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
           setSessionChecked(true);
         }
       } catch (error) {
-        console.error('Error checking session:', error);
+        console.error('⚠️ ProtectedRoute: Error checking session:', error);
         if (mounted) {
           setUser(null);
           setLoading(false);

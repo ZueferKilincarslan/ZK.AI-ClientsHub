@@ -29,6 +29,8 @@ export default function AdminClients() {
       setLoading(true);
       setError(null);
       
+      console.log('🔍 AdminClients: Fetching clients...');
+      
       // Fetch all client profiles
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
@@ -37,30 +39,45 @@ export default function AdminClients() {
         .order('created_at', { ascending: false });
 
       if (profilesError) throw profilesError;
+      
+      console.log('✅ AdminClients: Found profiles:', profiles?.length || 0);
 
       // Fetch workflow counts for each client
       const clientsWithCounts = await Promise.all(
         (profiles || []).map(async (profile) => {
-          const { count, error: countError } = await supabase
-            .from('workflows')
-            .select('*', { count: 'exact', head: true })
-            .eq('user_id', profile.id);
+          try {
+            const { count, error: countError } = await supabase
+              .from('workflows')
+              .select('*', { count: 'exact', head: true })
+              .eq('user_id', profile.id);
 
-          if (countError) {
-            console.error('Error fetching workflow count for client:', profile.id, countError);
+            if (countError) {
+              console.error('Error fetching workflow count for client:', profile.id, countError);
+              return {
+                ...profile,
+                workflows_count: 0
+              };
+            }
+
+            return {
+              ...profile,
+              workflows_count: count || 0
+            };
+          } catch (error) {
+            console.error('Error in workflow count fetch:', error);
+            return {
+              ...profile,
+              workflows_count: 0
+            };
           }
-
-          return {
-            ...profile,
-            workflows_count: count || 0
-          };
         })
       );
 
+      console.log('✅ AdminClients: Clients with counts:', clientsWithCounts.length);
       setClients(clientsWithCounts);
     } catch (error) {
       console.error('Error fetching clients:', error);
-      setError('Failed to load clients');
+      setError('Failed to load clients: ' + (error instanceof Error ? error.message : 'Unknown error'));
     } finally {
       setLoading(false);
     }
