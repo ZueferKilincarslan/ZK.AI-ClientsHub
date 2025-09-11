@@ -7,8 +7,6 @@ import { Zap } from 'lucide-react';
 
 export default function Login() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [userRole, setUserRole] = useState<string | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<'checking' | 'connected' | 'failed'>('checking');
   const [configErrors, setConfigErrors] = useState<string[]>([]);
 
@@ -20,22 +18,26 @@ export default function Login() {
 
     // Check existing session
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user && mounted) {
-        console.log('✅ Login: Existing session found');
-        
-        // Fetch user profile to get role
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', session.user.id)
-          .single();
-        
-        const role = profile?.role || 'client';
-        const redirectPath = role === 'admin' ? '/clients' : '/';
-        
-        console.log('🔄 Login: Redirecting to', redirectPath);
-        navigate(redirectPath, { replace: true });
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user && mounted) {
+          console.log('✅ Login: Existing session found');
+          
+          // Fetch user profile to get role
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', session.user.id)
+            .single();
+          
+          const role = profile?.role || 'client';
+          const redirectPath = role === 'admin' ? '/clients' : '/';
+          
+          console.log('🔄 Login: Redirecting to', redirectPath);
+          navigate(redirectPath, { replace: true });
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
       }
     };
 
@@ -49,23 +51,27 @@ export default function Login() {
         console.log('✅ Login: User signed in successfully');
         
         // Fetch user profile to get role
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', session.user.id)
-          .single();
-        
-        const role = profile?.role || 'client';
-        const redirectPath = role === 'admin' ? '/clients' : '/';
-        
-        console.log('🔄 Login: Redirecting to', redirectPath);
-        navigate(redirectPath, { replace: true });
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', session.user.id)
+            .single();
+          
+          const role = profile?.role || 'client';
+          const redirectPath = role === 'admin' ? '/clients' : '/';
+          
+          console.log('🔄 Login: Redirecting to', redirectPath);
+          navigate(redirectPath, { replace: true });
+        } catch (error) {
+          console.error('Error fetching profile:', error);
+          // Default redirect if profile fetch fails
+          navigate('/', { replace: true });
+        }
       }
       
       if (event === 'SIGNED_OUT') {
         console.log('👋 Login: User signed out');
-        setUser(null);
-        setUserRole(null);
       }
     });
 
@@ -75,7 +81,7 @@ export default function Login() {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate]);
 
   // Test connection when component mounts
   useEffect(() => {
