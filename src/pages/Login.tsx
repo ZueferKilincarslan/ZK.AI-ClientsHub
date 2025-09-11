@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase, hasSupabaseConfig, testSupabaseConnection } from '../lib/supabase';
@@ -16,32 +16,38 @@ export default function Login() {
 
     let mounted = true;
 
-    // Check existing session
+    // Check existing session first
     const checkSession = async () => {
       try {
+        console.log('🔍 Login: Checking existing session...');
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user && mounted) {
-          console.log('✅ Login: Existing session found');
+          console.log('✅ Login: Existing session found, redirecting...');
           
           // Fetch user profile to get role
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', session.user.id)
-            .single();
-          
-          const role = profile?.role || 'client';
-          const redirectPath = role === 'admin' ? '/clients' : '/';
-          
-          console.log('🔄 Login: Redirecting to', redirectPath);
-          navigate(redirectPath, { replace: true });
+          try {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('role')
+              .eq('id', session.user.id)
+              .single();
+            
+            const role = profile?.role || 'client';
+            const redirectPath = role === 'admin' ? '/clients' : '/';
+            
+            console.log('🔄 Login: Redirecting to', redirectPath);
+            navigate(redirectPath, { replace: true });
+          } catch (error) {
+            console.error('Error fetching profile, defaulting to dashboard:', error);
+            navigate('/', { replace: true });
+          }
         }
       } catch (error) {
         console.error('Error checking session:', error);
       }
     };
 
-    // Set up auth listener
+    // Set up auth listener for new sign-ins
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
       
@@ -61,10 +67,10 @@ export default function Login() {
           const role = profile?.role || 'client';
           const redirectPath = role === 'admin' ? '/clients' : '/';
           
-          console.log('🔄 Login: Redirecting to', redirectPath);
+          console.log('🔄 Login: Redirecting to', redirectPath, 'for role:', role);
           navigate(redirectPath, { replace: true });
         } catch (error) {
-          console.error('Error fetching profile:', error);
+          console.error('Error fetching profile after sign in:', error);
           // Default redirect if profile fetch fails
           navigate('/', { replace: true });
         }
@@ -75,6 +81,7 @@ export default function Login() {
       }
     });
 
+    // Check session on mount
     checkSession();
 
     return () => {
@@ -103,7 +110,7 @@ export default function Login() {
       }
       
       try {
-        // Connection test with longer timeout for separate tabs
+        // Connection test with timeout
         const testResult = await Promise.race([
           testSupabaseConnection(),
           new Promise<{ success: boolean; error: string }>((resolve) => 
@@ -128,9 +135,6 @@ export default function Login() {
     
     checkConnection();
   }, []);
-
-  // Redirect if already logged in
-  // Note: Redirect is now handled in useEffect to avoid race conditions
 
   // Show configuration error only if we're sure config is missing
   if (connectionStatus === 'failed' && configErrors.length > 0) {
