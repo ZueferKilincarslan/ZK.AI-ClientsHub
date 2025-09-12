@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import AdminHeader from './AdminHeader';
 import AdminSidebar from './AdminSidebar';
 import AdminClients from '../pages/admin/AdminClients';
@@ -8,6 +8,7 @@ import AdminSettings from '../pages/admin/AdminSettings';
 import ClientDetail from '../pages/admin/ClientDetail';
 
 export default function AdminPortal() {
+  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -20,12 +21,13 @@ export default function AdminPortal() {
         <main className="py-6 min-h-screen">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <Routes>
-              <Route path="/" element={<AdminClients />} />
+              <Route path="/" element={<Navigate to="/clients" replace />} />
               <Route path="/clients" element={<AdminClients />} />
               <Route path="/clients/:id" element={<ClientDetail />} />
               <Route path="/workflows" element={<AdminWorkflows />} />
               <Route path="/settings" element={<AdminSettings />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
+              {/* Redirect any unknown routes to clients */}
+              <Route path="*" element={<Navigate to="/clients" replace />} />
             </Routes>
           </div>
         </main>

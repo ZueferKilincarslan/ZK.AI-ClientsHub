@@ -1,11 +1,12 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import AuthForm from './components/AuthForm';
 import AdminPortal from './components/AdminPortal';
 import ClientPortal from './components/ClientPortal';
+import ProtectedRoute from './components/ProtectedRoute';
 
 // Loading component
 function LoadingScreen() {
@@ -19,42 +20,30 @@ function LoadingScreen() {
   );
 }
 
-// Auth guard component
-function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { user, profile, loading, error } = useAuth();
-  const [showFallback, setShowFallback] = useState(false);
-
-  // Fallback timer to prevent infinite loading
-  useEffect(() => {
-    const fallbackTimer = setTimeout(() => {
-      if (loading) {
-        console.warn('⏰ Auth loading timeout - showing fallback');
-        setShowFallback(true);
-      }
-    }, 10000); // 10 second fallback
-
-    return () => clearTimeout(fallbackTimer);
-  }, [loading]);
-
-  // Show loading screen while initializing
-  if (loading && !showFallback) {
-    return <LoadingScreen />;
-  }
-
-  // Show auth form if there's an error, no config, or fallback triggered
-  if (error || showFallback || !user) {
-    return <AuthForm />;
-  }
-
-  // Wait for profile to load (but with timeout protection)
-  if (!profile && !showFallback) {
-    return <LoadingScreen />;
-  }
-
-  return <>{children}</>;
+function App() {
+  return (
+    <ErrorBoundary>
+      <AuthProvider>
+        <Router>
+          <Routes>
+            {/* Public login route */}
+            <Route path="/login" element={<AuthForm />} />
+            
+            {/* Protected routes */}
+            <Route path="/*" element={
+              <ProtectedRoute>
+                <AppRoutes />
+              </ProtectedRoute>
+            } />
+          </Routes>
+        </Router>
+      </AuthProvider>
+    </ErrorBoundary>
+  );
 }
 
-function AppContent() {
+// Main app routes based on user role
+function AppRoutes() {
   const { profile } = useAuth();
 
   // Route based on user role
@@ -65,22 +54,6 @@ function AppContent() {
     console.log('Routing to Client Portal for user:', profile.email, 'role:', profile?.role);
     return <ClientPortal />;
   }
-}
-
-function App() {
-  return (
-    <ErrorBoundary>
-      <AuthProvider>
-        <Router>
-          <AuthGuard>
-            <Routes>
-              <Route path="/*" element={<AppContent />} />
-            </Routes>
-          </AuthGuard>
-        </Router>
-      </AuthProvider>
-    </ErrorBoundary>
-  );
 }
 
 export default App;

@@ -1,14 +1,25 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase, hasSupabaseConfig, testSupabaseConnection } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
 import { Zap } from 'lucide-react';
 
 export default function AuthForm() {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || '/';
 
   const [connectionStatus, setConnectionStatus] = useState<'checking' | 'connected' | 'failed'>('checking');
   const [configErrors, setConfigErrors] = useState<string[]>([]);
+
+  // Redirect if user is already authenticated
+  if (!loading && user) {
+    console.log('🔄 User already authenticated, redirecting to:', from);
+    return <Navigate to={from} replace />;
+  }
 
   // Test connection when component mounts
   useEffect(() => {

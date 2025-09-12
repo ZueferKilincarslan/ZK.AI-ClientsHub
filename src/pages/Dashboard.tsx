@@ -1,5 +1,6 @@
 import React from 'react';
 import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useState } from 'react';
 import { supabase, Workflow, Analytics } from '../lib/supabase';
@@ -203,7 +204,88 @@ export default function Dashboard() {
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  window.location.href = '/workflows';
+                  // Use React Router navigation instead
+                }}
+                className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+              >
+                <Link to="/workflows" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                  View all workflows →
+                </Link>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* Notifications */}
+        <div className="bg-white shadow rounded-lg">
+          <div className="px-4 py-5 sm:p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Recent Updates</h3>
+            <div className="space-y-4">
+              {workflows.slice(0, 3).map((workflow) => (
+                <div key={workflow.id} className="flex space-x-3">
+                  <div className="flex-shrink-0">
+                    {workflow.status === 'active' && (
+                      <CheckCircle className="h-5 w-5 text-green-400" />
+                    )}
+                    {workflow.status === 'paused' && (
+                      <AlertCircle className="h-5 w-5 text-yellow-400" />
+                    )}
+                    {workflow.status === 'failed' && (
+                      <AlertCircle className="h-5 w-5 text-red-400" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm text-gray-900">
+                      {workflow.name} is {workflow.status}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {workflow.executions.toLocaleString()} total executions
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-6">
+              <Link to="/workflows" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                View all workflows →
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="bg-white shadow rounded-lg">
+        <div className="px-4 py-5 sm:p-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <Link
+              to="/workflows"
+              className="relative rounded-lg border border-gray-300 bg-white px-6 py-4 text-left shadow-sm hover:shadow-md transition-shadow focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <div className="flex items-center space-x-3">
+                <WorkflowIcon className="h-6 w-6 text-indigo-600" />
+                <span className="text-sm font-medium text-gray-900">
+                  View Workflows
+                </span>
+              </div>
+            </Link>
+            <Link
+              to="/analytics"
+              className="relative rounded-lg border border-gray-300 bg-white px-6 py-4 text-left shadow-sm hover:shadow-md transition-shadow focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <div className="flex items-center space-x-3">
+                <Activity className="h-6 w-6 text-indigo-600" />
+                <span className="text-sm font-medium text-gray-900">
+                  View Analytics
+                </span>
+              </div>
+            </Link>
+            <button className="relative rounded-lg border border-gray-300 bg-white px-6 py-4 text-left shadow-sm hover:shadow-md transition-shadow focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <div className="flex items-center space-x-3">
+                <Mail className="h-6 w-6 text-indigo-600" />
+                <span className="text-sm font-medium text-gray-900">
+                  Email Templates
                 }}
                 className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
               >
@@ -243,9 +325,9 @@ export default function Dashboard() {
               ))}
             </div>
             <div className="mt-6">
-              <button className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+              <Link to="/workflows" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
                 View all workflows →
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -256,22 +338,28 @@ export default function Dashboard() {
         <div className="px-4 py-5 sm:p-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <button className="relative rounded-lg border border-gray-300 bg-white px-6 py-4 text-left shadow-sm hover:shadow-md transition-shadow focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <Link
+              to="/workflows"
+              className="relative rounded-lg border border-gray-300 bg-white px-6 py-4 text-left shadow-sm hover:shadow-md transition-shadow focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
               <div className="flex items-center space-x-3">
                 <WorkflowIcon className="h-6 w-6 text-indigo-600" />
                 <span className="text-sm font-medium text-gray-900">
                   View Workflows
                 </span>
               </div>
-            </button>
-            <button className="relative rounded-lg border border-gray-300 bg-white px-6 py-4 text-left shadow-sm hover:shadow-md transition-shadow focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </Link>
+            <Link
+              to="/analytics"
+              className="relative rounded-lg border border-gray-300 bg-white px-6 py-4 text-left shadow-sm hover:shadow-md transition-shadow focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
               <div className="flex items-center space-x-3">
                 <Activity className="h-6 w-6 text-indigo-600" />
                 <span className="text-sm font-medium text-gray-900">
                   View Analytics
                 </span>
               </div>
-            </button>
+            </Link>
             <button className="relative rounded-lg border border-gray-300 bg-white px-6 py-4 text-left shadow-sm hover:shadow-md transition-shadow focus:outline-none focus:ring-2 focus:ring-indigo-500">
               <div className="flex items-center space-x-3">
                 <Mail className="h-6 w-6 text-indigo-600" />
