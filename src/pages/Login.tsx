@@ -36,10 +36,10 @@ export default function Login() {
             const redirectPath = role === 'admin' ? '/clients' : '/';
             
             console.log('🔄 Login: Redirecting to', redirectPath);
-            navigate(redirectPath, { replace: true });
+            window.location.href = redirectPath;
           } catch (error) {
             console.error('Error fetching profile, defaulting to dashboard:', error);
-            navigate('/', { replace: true });
+            window.location.href = '/';
           }
         }
       } catch (error) {
